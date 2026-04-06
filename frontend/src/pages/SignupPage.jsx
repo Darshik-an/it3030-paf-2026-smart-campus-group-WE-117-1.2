@@ -5,13 +5,14 @@ import api from '../services/api';
 
 export default function SignupPage() {
   const { user, loading, login } = useAuth();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  if (loading) return <div className="loading-screen">Loading...</div>;
+  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-primary text-white">Loading...</div>;
   if (user) return <Navigate to="/dashboard" />;
 
   const handleGoogleLogin = () => {
@@ -21,7 +22,8 @@ export default function SignupPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/api/auth/register', { name, email, password });
+      const fullName = `${firstName} ${lastName}`.trim();
+      const res = await api.post('/api/auth/register', { name: fullName, email, password });
       login(res.data.token);
       navigate('/dashboard');
     } catch (err) {
@@ -34,174 +36,82 @@ export default function SignupPage() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #003049 0%, #001524 100%)',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-    }}>
-      <div style={{
-        background: 'white',
-        padding: '48px 40px',
-        borderRadius: '16px',
-        textAlign: 'center',
-        maxWidth: '420px',
-        width: '90%',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-      }}>
-        <div style={{
-          width: '64px',
-          height: '64px',
-          background: '#003049',
-          borderRadius: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 24px',
-          fontSize: '28px',
-        }}>
-          🏛️
+    <div className="h-screen w-full flex items-center justify-center p-4 bg-primary relative overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-secondary opacity-10 rounded-full blur-3xl"></div>
+        
+        <div className="auth-card w-full max-w-md p-8 rounded-3xl card-shadow relative z-10">
+            <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-accent2 rounded-xl flex items-center justify-center text-primary font-bold text-2xl mx-auto mb-4">E</div>
+                <h1 className="text-2xl font-bold text-primary">Join EduFlow</h1>
+                <p className="text-gray-500 text-sm">Start your learning journey today</p>
+            </div>
+
+            {error && <div className="text-secondary text-center text-sm mb-4 font-bold">{error}</div>}
+
+            <form onSubmit={handleSignup} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-bold text-primary uppercase mb-1 ml-1">First Name</label>
+                        <input 
+                            type="text" 
+                            placeholder="Alex" 
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm transition-all" 
+                            required 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-primary uppercase mb-1 ml-1">Last Name</label>
+                        <input 
+                            type="text" 
+                            placeholder="Johnson" 
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm transition-all" 
+                            required 
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-primary uppercase mb-1 ml-1">Student Email</label>
+                    <input 
+                        type="email" 
+                        placeholder="alex@university.edu" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm transition-all" 
+                        required 
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-primary uppercase mb-1 ml-1">Password</label>
+                    <input 
+                        type="password" 
+                        placeholder="Min. 8 characters" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm transition-all" 
+                        required 
+                    />
+                </div>
+                <button type="submit" className="w-full bg-accent1 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-accent1/20 mt-2">Create Account</button>
+            </form>
+
+            <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Or sign up with</span></div>
+            </div>
+
+            <button type="button" onClick={handleGoogleLogin} className="btn-google w-full flex items-center justify-center gap-3 py-3 rounded-xl font-semibold text-sm text-gray-700">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" className="w-5 h-5" alt="Google" />
+                Sign up with Google
+            </button>
+
+            <p className="text-center text-sm text-gray-500 mt-6">
+                Already have an account? <Link to="/login" className="text-accent1 font-bold hover:underline">Log in here</Link>
+            </p>
         </div>
-        <h1 style={{
-          color: '#003049',
-          marginBottom: '8px',
-          fontSize: '28px',
-          fontWeight: '700',
-        }}>
-          Create Account
-        </h1>
-        <p style={{
-          color: '#666',
-          marginBottom: '24px',
-          fontSize: '15px',
-          lineHeight: '1.5',
-        }}>
-          Join Smart Campus Hub today
-        </p>
-
-        {error && <div style={{ color: '#D62828', marginBottom: '16px', fontWeight: '500' }}>{error}</div>}
-
-        <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            style={{
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-              outline: 'none',
-            }}
-            onFocus={(e) => e.target.style.borderColor = '#F77F00'}
-            onBlur={(e) => e.target.style.borderColor = '#ccc'}
-          />
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-              outline: 'none',
-            }}
-            onFocus={(e) => e.target.style.borderColor = '#F77F00'}
-            onBlur={(e) => e.target.style.borderColor = '#ccc'}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-              outline: 'none',
-            }}
-            onFocus={(e) => e.target.style.borderColor = '#F77F00'}
-            onBlur={(e) => e.target.style.borderColor = '#ccc'}
-          />
-          <button
-            type="submit"
-            style={{
-              padding: '14px',
-              background: '#003049',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              marginTop: '4px'
-            }}
-            onMouseOver={(e) => e.target.style.background = '#001524'}
-            onMouseOut={(e) => e.target.style.background = '#003049'}
-          >
-            Sign Up
-          </button>
-        </form>
-
-        <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: '#999' }}>
-          <div style={{ flex: 1, height: '1px', background: '#eee' }} />
-          <span style={{ padding: '0 10px', fontSize: '14px', fontWeight: '500' }}>OR</span>
-          <div style={{ flex: 1, height: '1px', background: '#eee' }} />
-        </div>
-
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            padding: '14px 28px',
-            border: '2px solid #e0e0e0',
-            borderRadius: '12px',
-            background: 'white',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: '500',
-            margin: '0 auto',
-            width: '100%',
-            transition: 'all 0.2s ease',
-            color: '#333',
-            marginBottom: '20px'
-          }}
-          onMouseOver={(e) => {
-            e.target.style.borderColor = '#F77F00';
-            e.target.style.boxShadow = '0 4px 12px rgba(247,127,0,0.2)';
-          }}
-          onMouseOut={(e) => {
-            e.target.style.borderColor = '#e0e0e0';
-            e.target.style.boxShadow = 'none';
-          }}
-        >
-          <img
-            src="https://developers.google.com/identity/images/g-logo.png"
-            alt="Google"
-            width="20"
-            height="20"
-          />
-          Sign up with Google
-        </button>
-
-        <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
-          Already have an account? <Link to="/login" style={{ color: '#F77F00', textDecoration: 'none', fontWeight: '600' }}>Sign in</Link>
-        </p>
-      </div>
     </div>
   );
 }
