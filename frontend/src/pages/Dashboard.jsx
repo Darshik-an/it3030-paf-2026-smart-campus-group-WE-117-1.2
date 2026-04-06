@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { 
+  Building, Calendar, Wrench, Users, Shield, LogOut, 
+  LayoutDashboard, ChevronRight, Clock, Bell, CheckCircle2 
+} from 'lucide-react';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-  };
-
+  // Derive initial or name
   const getFirstName = () => {
     if (!user || (!user.name && !user.sub)) return 'Student';
     const nameStr = user.name || user.sub;
@@ -18,133 +21,237 @@ export default function Dashboard() {
       return name ? name.charAt(0).toUpperCase() : 'S';
   };
 
+  const isAdmin = user?.role === 'ADMIN';
+  const unreadCount = 0; // Replace with your real notifications context later
+
   return (
-    <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <aside className="hidden md:flex flex-col w-64 bg-primary text-white">
-            <div className="p-6 flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent2 rounded-lg flex items-center justify-center text-primary font-bold text-xl">E</div>
-                <span className="text-xl font-bold tracking-tight">EduFlow</span>
+    <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-sans">
+      
+      {/* SIDEBAR */}
+      <aside className="hidden lg:flex flex-col w-72 bg-[#003049] text-white shadow-2xl z-20">
+        <div className="p-8 flex items-center gap-4 border-b border-white/10 mb-4">
+          <div className="w-12 h-12 bg-[#FCBF49] rounded-2xl flex items-center justify-center text-[#003049] font-black text-2xl shadow-inner">SC</div>
+          <div>
+            <span className="text-xl font-black tracking-tight block leading-none">SmartCampus</span>
+            <span className="text-xs font-bold text-[#FCBF49] tracking-widest uppercase">Hub</span>
+          </div>
+        </div>
+        
+        <div className="px-6 mb-6">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Menu</p>
+          <nav className="space-y-2">
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-[#F77F00] text-white font-bold shadow-lg shadow-[#F77F00]/20 transition-all text-left">
+              <LayoutDashboard className="w-5 h-5" />
+              <span>Dashboard Overview</span>
+            </button>
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all text-left font-semibold">
+              <Building className="w-5 h-5" />
+              <span>{isAdmin ? 'Manage Facilities' : 'Browse Facilities'}</span>
+            </button>
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all text-left font-semibold">
+              <Calendar className="w-5 h-5" />
+              <span>{isAdmin ? 'All Bookings' : 'My Bookings'}</span>
+            </button>
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all text-left font-semibold">
+              <Wrench className="w-5 h-5" />
+              <span>{isAdmin ? 'Incident Tickets' : 'Report Issue'}</span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Role-Based Authorization Menu Items */}
+        {isAdmin && (
+          <div className="px-6 mt-4">
+            <p className="text-[10px] font-bold text-[#D62828] uppercase tracking-widest mb-3">Admin Controls</p>
+            <nav className="space-y-2">
+              <button className="w-full flex items-center gap-4 p-4 rounded-xl text-white/60 hover:text-[#D62828] hover:bg-white/5 transition-all text-left font-semibold">
+                <Users className="w-5 h-5" />
+                <span>User Management</span>
+              </button>
+              <button className="w-full flex items-center gap-4 p-4 rounded-xl text-white/60 hover:text-[#D62828] hover:bg-white/5 transition-all text-left font-semibold">
+                <Shield className="w-5 h-5" />
+                <span>System Settings</span>
+              </button>
+            </nav>
+          </div>
+        )}
+
+        <div className="mt-auto p-6 border-t border-white/10">
+          <button onClick={logout} className="w-full flex items-center justify-center gap-3 text-white/50 hover:text-[#D62828] transition-colors text-sm font-bold p-4 rounded-xl hover:bg-[#D62828]/10 group">
+            <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        
+        {/* HEADER */}
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-24 flex items-center justify-between px-10 flex-shrink-0 z-30 relative">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-black text-[#003049] hidden md:block">Operations Center</h2>
+          </div>
+
+          <div className="flex items-center gap-8">
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-3 text-gray-400 hover:text-[#003049] transition-colors hover:bg-gray-50 rounded-full"
+              >
+                <Bell className="w-6 h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 bg-[#D62828] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white font-bold animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
             </div>
             
-            <nav className="flex-1 px-4 mt-4 space-y-2">
-                <a href="#" className="flex items-center gap-3 p-3 rounded-lg active-nav transition-all">
-                    <i className="fa-solid fa-house w-5"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" className="flex items-center gap-3 p-3 rounded-lg nav-item transition-all">
-                    <i className="fa-solid fa-book-open w-5"></i>
-                    <span>My Courses</span>
-                </a>
-                <a href="#" className="flex items-center gap-3 p-3 rounded-lg nav-item transition-all">
-                    <i className="fa-solid fa-calendar-days w-5"></i>
-                    <span>Schedule</span>
-                </a>
-                <a href="#" className="flex items-center gap-3 p-3 rounded-lg nav-item transition-all">
-                    <i className="fa-solid fa-chart-line w-5"></i>
-                    <span>Grades</span>
-                </a>
-                <a href="#" className="flex items-center gap-3 p-3 rounded-lg nav-item transition-all">
-                    <i className="fa-solid fa-message w-5"></i>
-                    <span>Messages</span>
-                </a>
-            </nav>
-
-            <div className="p-6">
-                <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-white/60 hover:text-white transition-colors text-sm py-4 border-t border-white/10">
-                    <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                    Logout
-                </button>
-            </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col overflow-y-auto bg-[#f8f9fa]">
-            <header className="bg-white border-b h-20 flex items-center justify-between px-8 flex-shrink-0 sticky top-0 z-10">
-                <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 w-full max-w-sm">
-                    <i className="fa-solid fa-magnifying-glass text-gray-400 mr-2"></i>
-                    <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm w-full" />
-                </div>
-
-                <div className="flex items-center gap-6">
-                    <button className="relative text-gray-400 hover:text-primary transition-colors">
-                        <i className="fa-solid fa-bell text-xl"></i>
-                        <span className="absolute -top-1 -right-1 bg-secondary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">3</span>
-                    </button>
-                    <div className="flex items-center gap-3 border-l pl-6">
-                        <div className="w-10 h-10 rounded-full bg-accent2 border-2 border-white flex items-center justify-center overflow-hidden font-bold text-primary">
-                             {user?.picture ? (
-                                <img src={user.picture} alt="avatar" className="w-full h-full object-cover" />
-                             ) : (
-                                getInitial()
-                             )}
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div className="p-8 space-y-8 text-slate-800">
-                {/* Welcome Section */}
-                <section className="flex flex-col lg:flex-row gap-6">
-                    <div className="flex-1 bg-primary rounded-3xl p-8 text-white relative overflow-hidden flex flex-col justify-center">
-                        <div className="relative z-10">
-                            <h1 className="text-3xl font-bold mb-2">Welcome back, {getFirstName()}! 👋</h1>
-                            <p className="text-blue-100 mb-6 max-w-md">You've completed 75% of your weekly goals. Keep it up and finish your assignments before Friday!</p>
-                            <button className="bg-accent2 text-primary px-6 py-2.5 rounded-xl font-bold hover:scale-105 transition-transform">View Progress</button>
-                        </div>
-                        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-accent1 opacity-20 rounded-full blur-3xl"></div>
-                    </div>
-                </section>
-
-                {user?.role === 'ADMIN' && (
-                    <div className="bg-accent1/10 border border-accent1/20 rounded-xl p-4 mb-4 text-accent1 font-bold">
-                        <i className="fa-solid fa-shield-halved mr-2"></i>
-                        Admin Panel Access Granted
-                    </div>
+            {/* User Profile */}
+            <div className="flex items-center gap-4 border-l border-gray-200 pl-8">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-[#003049] leading-tight">{user?.name}</p>
+                <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-[#D62828]' : 'text-[#F77F00]'}`}>
+                  {user?.role || 'STUDENT'}
+                </p>
+              </div>
+              <div className={`w-12 h-12 rounded-2xl border-2 shadow-sm flex items-center justify-center overflow-hidden transition-transform hover:scale-105 cursor-pointer ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10 text-[#003049] font-bold'}`}>
+                {user?.picture ? (
+                  <img src={user.picture} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  getInitial()
                 )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Course Card Mock */}
-                    <div className="bg-white rounded-3xl p-6 card-shadow border-l-8 border-accent1">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <span className="text-[10px] font-bold text-accent1 uppercase tracking-widest">Science</span>
-                                <h3 className="text-xl font-bold text-primary">Advanced Astrophysics</h3>
-                            </div>
-                            <div className="bg-accent1/10 p-2 rounded-lg text-accent1">
-                                <i className="fa-solid fa-atom"></i>
-                            </div>
-                        </div>
-                        <div className="w-full bg-gray-100 h-2 rounded-full mb-4">
-                            <div className="bg-accent1 h-full rounded-full w-2/3"></div>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-500">
-                            <span>Chapter 4 of 12</span>
-                            <span className="font-bold text-primary">65% Complete</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-3xl p-6 card-shadow border-l-8 border-secondary">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">History</span>
-                                <h3 className="text-xl font-bold text-primary">Modern World History</h3>
-                            </div>
-                            <div className="bg-secondary/10 p-2 rounded-lg text-secondary">
-                                <i className="fa-solid fa-earth-americas"></i>
-                            </div>
-                        </div>
-                        <div className="w-full bg-gray-100 h-2 rounded-full mb-4">
-                            <div className="bg-secondary h-full rounded-full w-1/3"></div>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-500">
-                            <span>Chapter 2 of 8</span>
-                            <span className="font-bold text-primary">40% Complete</span>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-        </main>
+          </div>
+        </header>
+
+        {/* DASHBOARD BODY */}
+        <div className="flex-1 overflow-y-auto p-10 space-y-10">
+          
+          {/* Welcome Banner */}
+          <section className="bg-[#003049] rounded-[2.5rem] p-12 text-white relative overflow-hidden flex flex-col justify-center shadow-2xl shadow-[#003049]/10 border border-[#003049]">
+            <div className="relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20 backdrop-blur-sm mb-6">
+                <span className="bg-[#FCBF49] w-2 h-2 rounded-full animate-pulse"></span>
+                <span className="text-white text-xs font-bold uppercase tracking-widest">System Active</span>
+              </div>
+              <h1 className="text-4xl lg:text-5xl font-black mb-4 tracking-tight">Hello, {getFirstName()}! 👋</h1>
+              <p className="text-blue-100/80 text-lg mb-8 leading-relaxed font-medium">
+                {isAdmin 
+                  ? "Here is your administrative overview of campus operations today. There are 3 pending bookings requiring your attention."
+                  : "Welcome to your operations portal. You can book facilities, track your reservations, or report maintenance issues here."}
+              </p>
+              <div className="flex gap-4">
+                <button className="bg-[#FCBF49] text-[#003049] px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg shadow-[#000000]/10 active:scale-95 flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> {isAdmin ? 'Review Bookings' : 'Book a Facility'}
+                </button>
+                {!isAdmin && (
+                  <button className="bg-white/10 text-white border border-white/20 px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center gap-2">
+                    <Wrench className="w-5 h-5" /> Report Issue
+                  </button>
+                )}
+              </div>
+            </div>
+            {/* Background Orbs */}
+            <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-[#F77F00] opacity-20 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-20%] right-[10%] w-[400px] h-[400px] bg-[#D62828] opacity-20 rounded-full blur-[100px]"></div>
+          </section>
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <MetricCard icon={<Building />} color="#003049" title="24" subtitle="Available Rooms" />
+            <MetricCard icon={<Calendar />} color="#F77F00" title={isAdmin ? "12" : "2"} subtitle={isAdmin ? "Pending Approvals" : "My Active Bookings"} />
+            <MetricCard icon={<Wrench />} color="#D62828" title={isAdmin ? "8" : "0"} subtitle={isAdmin ? "Open Tickets" : "My Open Tickets"} />
+            <MetricCard icon={<CheckCircle2 />} color="#FCBF49" title="98%" subtitle="Resolution Rate" />
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+            {/* Main Column */}
+            <div className="xl:col-span-2 space-y-10">
+              
+              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-black text-[#003049]">{isAdmin ? 'Recent Booking Requests' : 'My Upcoming Bookings'}</h2>
+                  <button className="text-sm font-bold text-[#F77F00] hover:underline flex items-center gap-1">View All <ChevronRight className="w-4 h-4"/></button>
+                </div>
+                
+                <div className="space-y-4">
+                  <ListItem 
+                    title="Main Auditorium" desc="Oct 24, 10:00 AM - 12:00 PM" 
+                    status={isAdmin ? "PENDING" : "APPROVED"} 
+                    icon={<Building className="w-5 h-5" />} color="#003049" 
+                  />
+                  <ListItem 
+                    title="Computer Lab 402" desc="Oct 25, 02:00 PM - 04:00 PM" 
+                    status="PENDING" 
+                    icon={<Building className="w-5 h-5" />} color="#F77F00" 
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            {/* Side Column */}
+            <div className="space-y-10">
+              <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+                <h2 className="text-xl font-black text-[#003049] mb-6 flex items-center gap-2"><Clock className="w-5 h-5 text-[#F77F00]" /> Quick Actions</h2>
+                <div className="space-y-4">
+                  <button className="w-full p-4 rounded-xl border-2 border-gray-100 hover:border-[#003049] hover:bg-gray-50 flex items-center gap-4 transition-all group font-bold text-gray-700">
+                    <div className="w-10 h-10 rounded-lg bg-[#003049]/10 text-[#003049] flex items-center justify-center group-hover:scale-110 transition-transform"><Building className="w-5 h-5"/></div>
+                    Find a Room
+                  </button>
+                  <button className="w-full p-4 rounded-xl border-2 border-gray-100 hover:border-[#D62828] hover:bg-gray-50 flex items-center gap-4 transition-all group font-bold text-gray-700">
+                    <div className="w-10 h-10 rounded-lg bg-[#D62828]/10 text-[#D62828] flex items-center justify-center group-hover:scale-110 transition-transform"><Wrench className="w-5 h-5"/></div>
+                    Submit Ticket
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
+
+// Subcomponents helper
+const MetricCard = ({ icon, color, title, subtitle }) => (
+  <div className="bg-white p-6 rounded-3xl shadow-sm flex items-center gap-5 border border-gray-100 hover:-translate-y-1 transition-transform cursor-default">
+    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-inner" style={{ backgroundColor: color }}>
+      {icon}
+    </div>
+    <div>
+      <p className="text-3xl font-black text-[#003049] leading-tight">{title}</p>
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{subtitle}</p>
+    </div>
+  </div>
+);
+
+const ListItem = ({ title, desc, status, icon, color }) => {
+  const getStatusColor = (s) => {
+    switch(s) {
+      case 'APPROVED': return 'bg-green-100 text-green-700';
+      case 'PENDING': return 'bg-[#FCBF49]/20 text-[#D62828]';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between p-5 rounded-2xl border border-gray-100 hover:shadow-md transition-all group">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: `${color}15`, color }}>
+          {icon}
+        </div>
+        <div>
+          <h4 className="font-bold text-[#003049]">{title}</h4>
+          <p className="text-xs font-semibold text-gray-400 mt-0.5">{desc}</p>
+        </div>
+      </div>
+      <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${getStatusColor(status)}`}>
+        {status}
+      </span>
+    </div>
+  );
+};
