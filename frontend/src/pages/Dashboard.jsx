@@ -1,13 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Building, Calendar, Wrench, Users, Shield, LogOut, 
-  LayoutDashboard, ChevronRight, Clock, Bell, CheckCircle2 
+  LayoutDashboard, ChevronRight, Clock, Bell, CheckCircle2, Menu, X
 } from 'lucide-react';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when screen resizes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Derive initial or name
   const getFirstName = () => {
@@ -28,13 +40,32 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-sans">
       
       {/* SIDEBAR */}
-      <aside className="hidden lg:flex flex-col w-72 bg-[#003049] text-white shadow-2xl z-20">
-        <div className="p-8 flex items-center gap-4 border-b border-white/10 mb-4">
-          <div className="w-12 h-12 bg-[#FCBF49] rounded-2xl flex items-center justify-center text-[#003049] font-black text-2xl shadow-inner">SC</div>
-          <div>
-            <span className="text-xl font-black tracking-tight block leading-none">SmartCampus</span>
-            <span className="text-xs font-bold text-[#FCBF49] tracking-widest uppercase">Hub</span>
+      <div 
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity lg:hidden ${
+          isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+      
+      <aside 
+        className={`fixed lg:relative flex col w-72 h-full bg-[#003049] text-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } flex-col`}
+      >
+        <div className="p-8 flex items-center justify-between lg:justify-start gap-4 border-b border-white/10 mb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#FCBF49] rounded-2xl flex items-center justify-center text-[#003049] font-black text-2xl shadow-inner">SC</div>
+            <div>
+              <span className="text-xl font-black tracking-tight block leading-none">SmartCampus</span>
+              <span className="text-xs font-bold text-[#FCBF49] tracking-widest uppercase">Hub</span>
+            </div>
           </div>
+          <button 
+            className="lg:hidden text-white/50 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
         
         <div className="px-6 mb-6">
@@ -88,9 +119,15 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col overflow-hidden relative">
         
         {/* HEADER */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-24 flex items-center justify-between px-10 flex-shrink-0 z-30 relative">
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-24 flex items-center justify-between px-6 md:px-10 flex-shrink-0 z-30 relative">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-black text-[#003049] hidden md:block">Operations Center</h2>
+            <button 
+              className="lg:hidden p-2 text-[#003049] hover:bg-gray-100 rounded-xl transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <h2 className="text-xl md:text-2xl font-black text-[#003049] hidden sm:block">Operations Center</h2>
           </div>
 
           <div className="flex items-center gap-8">
@@ -128,27 +165,27 @@ export default function Dashboard() {
         </header>
 
         {/* DASHBOARD BODY */}
-        <div className="flex-1 overflow-y-auto p-10 space-y-10">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-10">
           
           {/* Welcome Banner */}
-          <section className="bg-[#003049] rounded-[2.5rem] p-12 text-white relative overflow-hidden flex flex-col justify-center shadow-2xl shadow-[#003049]/10 border border-[#003049]">
+          <section className="bg-[#003049] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 text-white relative overflow-hidden flex flex-col justify-center shadow-2xl shadow-[#003049]/10 border border-[#003049]">
             <div className="relative z-10 max-w-2xl">
               <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20 backdrop-blur-sm mb-6">
                 <span className="bg-[#FCBF49] w-2 h-2 rounded-full animate-pulse"></span>
                 <span className="text-white text-xs font-bold uppercase tracking-widest">System Active</span>
               </div>
-              <h1 className="text-4xl lg:text-5xl font-black mb-4 tracking-tight">Hello, {getFirstName()}! 👋</h1>
-              <p className="text-blue-100/80 text-lg mb-8 leading-relaxed font-medium">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 tracking-tight">Hello, {getFirstName()}! 👋</h1>
+              <p className="text-blue-100/80 text-base md:text-lg mb-8 leading-relaxed font-medium">
                 {isAdmin 
                   ? "Here is your administrative overview of campus operations today. There are 3 pending bookings requiring your attention."
                   : "Welcome to your operations portal. You can book facilities, track your reservations, or report maintenance issues here."}
               </p>
-              <div className="flex gap-4">
-                <button className="bg-[#FCBF49] text-[#003049] px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg shadow-[#000000]/10 active:scale-95 flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button className="bg-[#FCBF49] text-[#003049] px-6 py-4 rounded-2xl font-bold hover:scale-[1.02] transition-all shadow-lg shadow-[#000000]/10 active:scale-95 flex items-center justify-center gap-2">
                   <Calendar className="w-5 h-5" /> {isAdmin ? 'Review Bookings' : 'Book a Facility'}
                 </button>
                 {!isAdmin && (
-                  <button className="bg-white/10 text-white border border-white/20 px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center gap-2">
+                  <button className="bg-white/10 text-white border border-white/20 px-6 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2">
                     <Wrench className="w-5 h-5" /> Report Issue
                   </button>
                 )}

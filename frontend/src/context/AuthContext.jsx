@@ -12,6 +12,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (token) {
+      if (token === 'dummy-token') {
+        setUser({ name: 'Guest User', role: 'STUDENT', email: 'guest@smartcampus.edu' });
+        setLoading(false);
+        return;
+      }
       axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
