@@ -25,11 +25,6 @@ export default function LandingPage() {
         
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10 w-full">
           <div className="space-y-8 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20 backdrop-blur-sm">
-              <span className="bg-[#FCBF49] w-2 h-2 rounded-full animate-ping"></span>
-              <span className="text-white/90 text-xs font-bold uppercase tracking-widest">IT3030 PAF Assignment</span>
-            </div>
-            
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight">
               Manage Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FCBF49] to-[#F77F00]">Operations</span> Effortlessly
             </h1>
