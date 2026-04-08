@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Building, Calendar, Wrench, Users, Shield, LogOut,
-  LayoutDashboard, Bell, Menu, X, Settings, UserCircle
+  LayoutDashboard, Menu, X, Settings, UserCircle
 } from 'lucide-react';
+import NotificationPanel from '../components/NotificationPanel';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -124,11 +125,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-4 md:gap-8">
-            {/* Notification Bell — will be replaced with NotificationPanel component in next prompt */}
-            <button className="relative p-3 text-gray-400 hover:text-[#003049] transition-colors hover:bg-gray-50 rounded-full">
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-1.5 right-1.5 bg-[#D62828] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white font-bold animate-pulse">3</span>
-            </button>
+            <NotificationPanel />
 
             {/* User info */}
             <div className="flex items-center gap-3 border-l border-gray-200 pl-4 md:pl-8">
