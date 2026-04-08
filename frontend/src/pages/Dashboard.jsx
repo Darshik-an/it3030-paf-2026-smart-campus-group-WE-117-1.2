@@ -102,7 +102,7 @@ export default function Dashboard() {
       />
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#003049] text-white shadow-2xl flex flex-col transform transition-transform lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#003049] text-white shadow-2xl flex flex-col transform transition-transform lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="lg:hidden flex justify-end p-4">
           <button onClick={() => setIsMobileMenuOpen(false)} className="text-white/60 hover:text-white">
             <X className="w-6 h-6" />
