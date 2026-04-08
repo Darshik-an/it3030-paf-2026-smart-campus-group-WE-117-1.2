@@ -55,12 +55,12 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-4">
-              <Link to="/signup" className="w-full sm:w-auto px-8 py-4 bg-[#F77F00] text-white rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-[#F77F00]/20 flex items-center justify-center gap-2 group">
+              <Link to="/login" className="w-full sm:w-auto px-8 py-4 bg-[#F77F00] text-white rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-[#F77F00]/20 flex items-center justify-center gap-2 group">
                 Access Student Portal
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link to="/login" className="w-full sm:w-auto px-8 py-4 bg-white/10 text-white rounded-2xl font-bold text-lg hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-2">
-                Staff & Admin Login
+              <Link to="/admin-login" className="w-full sm:w-auto px-8 py-4 bg-white/10 text-white rounded-2xl font-bold text-lg hover:bg-white/20 transition-all border border-white/10 flex items-center justify-center gap-2">
+                Staff Login
               </Link>
             </div>
           </div>

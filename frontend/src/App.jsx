@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import AdminLogin from './pages/AdminLogin';
 import SignupPage from './pages/SignupPage';
 import OAuth2Callback from './pages/OAuth2Callback';
 import Dashboard from './pages/Dashboard';
@@ -13,6 +14,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/oauth2/callback" element={<OAuth2Callback />} />
           <Route path="/dashboard" element={
