@@ -11,6 +11,7 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -96,14 +97,21 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-sans">
 
-      {/* Mobile overlay */}
+      {/* Overlay for Sidebar */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity lg:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setIsMobileMenuOpen(false)}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => {
+          setIsMobileMenuOpen(false);
+          setIsDesktopMenuOpen(false);
+        }}
       />
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#003049] text-white shadow-2xl flex flex-col transform transition-transform lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside 
+        onMouseEnter={() => setIsDesktopMenuOpen(true)}
+        onMouseLeave={() => setIsDesktopMenuOpen(false)}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#003049] text-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen || isDesktopMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
         <div className="lg:hidden flex justify-end p-4">
           <button onClick={() => setIsMobileMenuOpen(false)} className="text-white/60 hover:text-white">
             <X className="w-6 h-6" />
@@ -118,7 +126,11 @@ export default function Dashboard() {
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-20 flex items-center justify-between px-4 md:px-10 flex-shrink-0 z-30">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:text-[#003049]">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)} 
+              onMouseEnter={() => window.innerWidth >= 1024 && setIsDesktopMenuOpen(true)}
+              className="p-2 text-gray-600 hover:text-[#003049] transition-transform hover:scale-105"
+            >
               <Menu className="w-6 h-6" />
             </button>
             <h2 className="text-xl md:text-2xl font-black text-[#003049]">Operations Center</h2>
