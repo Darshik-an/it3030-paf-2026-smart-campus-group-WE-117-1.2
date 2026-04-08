@@ -43,8 +43,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user.setEmail(email);
             user.setName(name);
             user.setProfilePicture(picture);
-            // First user could be ADMIN or standard logic. Defaulting to STUDENT
-            user.setRole(User.Role.STUDENT); 
+            // First user could be ADMIN or standard logic. Defaulting to USER
+            user.setRole(User.Role.USER); 
             userRepository.save(user);
         } else {
             user = existingUser.get();

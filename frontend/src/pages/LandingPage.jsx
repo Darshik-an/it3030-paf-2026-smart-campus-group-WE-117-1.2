@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Wrench, Bell, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Calendar, Wrench, Bell, CheckCircle2, Menu, X } from 'lucide-react';
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-[#FCBF49] selection:text-[#003049] overflow-x-hidden">
       {/* Navbar */}
@@ -11,11 +14,29 @@ export default function LandingPage() {
             <div className="w-10 h-10 bg-[#FCBF49] rounded-xl flex items-center justify-center text-[#003049] font-black text-xl shadow-inner">SC</div>
             <span className="text-2xl font-black tracking-tight text-white">SmartCampus<span className="text-[#F77F00]">Hub</span></span>
           </div>
+          
+          {/* Desktop links */}
           <div className="hidden md:flex items-center gap-8">
             <Link to="/login" className="text-white font-semibold hover:text-[#FCBF49] transition-colors">Log In</Link>
             <Link to="/signup" className="px-6 py-2.5 bg-[#F77F00] text-white rounded-xl font-bold hover:bg-[#e67600] transition-all shadow-lg shadow-[#F77F00]/20">Get Started</Link>
           </div>
+
+          {/* Mobile menu button */}
+          <button 
+            className="md:hidden text-white/80 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          </button>
         </div>
+
+        {/* Mobile Nav Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-[#003049] border-t border-white/10 shadow-2xl flex flex-col p-6 gap-6 z-50">
+            <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-white font-semibold text-center text-lg hover:text-[#FCBF49] transition-colors p-2">Log In</Link>
+            <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center px-6 py-4 bg-[#F77F00] text-white rounded-xl font-bold hover:bg-[#e67600] transition-all shadow-lg shadow-[#F77F00]/20">Get Started</Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}

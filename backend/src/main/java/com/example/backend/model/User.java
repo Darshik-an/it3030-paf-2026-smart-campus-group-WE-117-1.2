@@ -31,10 +31,10 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.STUDENT;
+    private Role role = Role.USER;
 
     public enum Role {
-        STUDENT, STAFF, ADMIN
+        USER, ADMIN, TECHNICIAN
     }
 
     @Override

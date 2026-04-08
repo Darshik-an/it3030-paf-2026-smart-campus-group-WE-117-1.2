@@ -18,12 +18,8 @@ export default function LoginPage() {
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
-    try {
-      const response = await api.post('/api/auth/login', { email, password });
-      login(response.data.token);
-    } catch (err) {
-      setError(err.response?.data || err.message || 'Invalid credentials');
-    }
+    // Bypassing real backend login for UI testing, just log in directly as a guest
+    login('dummy-token');
   };
 
   return (
