@@ -3,15 +3,20 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Building, Calendar, Wrench, Users, Shield, LogOut,
-  LayoutDashboard, Menu, X, Settings, UserCircle
+  LayoutDashboard, Menu, X, Settings, UserCircle, ChevronDown
 } from 'lucide-react';
 import NotificationPanel from '../components/NotificationPanel';
+import UserManagement from '../components/admin/UserManagement';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isAdmin = user?.role === 'ADMIN';
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'users' : 'dashboard');
+  
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) setIsMobileMenuOpen(false);
@@ -28,8 +33,6 @@ export default function Dashboard() {
   const getInitial = () => {
     return getFirstName().charAt(0).toUpperCase();
   };
-
-  const isAdmin = user?.role === 'ADMIN';
 
   const handleLogout = () => {
     logout();
@@ -49,7 +52,10 @@ export default function Dashboard() {
       <div className="px-6 mb-6">
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Menu</p>
         <nav className="space-y-2">
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-[#F77F00] text-white font-bold shadow-lg shadow-[#F77F00]/20 transition-all text-left">
+          <button 
+            onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); setIsDesktopMenuOpen(false); }}
+            className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${activeTab === 'dashboard' ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+          >
             <LayoutDashboard className="w-5 h-5" />
             <span>Dashboard</span>
           </button>
@@ -72,7 +78,10 @@ export default function Dashboard() {
         <div className="px-6 mt-4">
           <p className="text-[10px] font-bold text-[#D62828] uppercase tracking-widest mb-3">Admin Controls</p>
           <nav className="space-y-2">
-            <button className="w-full flex items-center gap-4 p-4 rounded-xl text-white/60 hover:text-[#D62828] hover:bg-white/5 transition-all text-left font-semibold">
+            <button 
+              onClick={() => { setActiveTab('users'); setIsMobileMenuOpen(false); setIsDesktopMenuOpen(false); }}
+              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${activeTab === 'users' ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/20' : 'text-white/60 hover:text-[#D62828] hover:bg-white/5'}`}
+            >
               <Users className="w-5 h-5" />
               <span>User Management</span>
             </button>
@@ -96,14 +105,21 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-sans">
 
-      {/* Mobile overlay */}
+      {/* Overlay for Sidebar */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity lg:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setIsMobileMenuOpen(false)}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => {
+          setIsMobileMenuOpen(false);
+          setIsDesktopMenuOpen(false);
+        }}
       />
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#003049] text-white shadow-2xl flex flex-col transform transition-transform lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside 
+        onMouseEnter={() => setIsDesktopMenuOpen(true)}
+        onMouseLeave={() => setIsDesktopMenuOpen(false)}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#003049] text-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen || isDesktopMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
         <div className="lg:hidden flex justify-end p-4">
           <button onClick={() => setIsMobileMenuOpen(false)} className="text-white/60 hover:text-white">
             <X className="w-6 h-6" />
@@ -118,7 +134,11 @@ export default function Dashboard() {
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-20 flex items-center justify-between px-4 md:px-10 flex-shrink-0 z-30">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:text-[#003049]">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)} 
+              onMouseEnter={() => window.innerWidth >= 1024 && setIsDesktopMenuOpen(true)}
+              className="p-2 text-gray-600 hover:text-[#003049] transition-transform hover:scale-105"
+            >
               <Menu className="w-6 h-6" />
             </button>
             <h2 className="text-xl md:text-2xl font-black text-[#003049]">Operations Center</h2>
@@ -128,19 +148,59 @@ export default function Dashboard() {
             <NotificationPanel />
 
             {/* User info */}
-            <div className="flex items-center gap-3 border-l border-gray-200 pl-4 md:pl-8">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-[#003049] leading-tight">{user?.name || 'User'}</p>
-                <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-[#D62828]' : 'text-[#F77F00]'}`}>
-                  {user?.role || 'USER'}
-                </p>
+            <div className="relative group cursor-pointer border-l border-gray-200 pl-4 md:pl-8">
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold text-[#003049] leading-tight">{user?.name || 'User'}</p>
+                  <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-[#D62828]' : 'text-[#F77F00]'}`}>
+                    {user?.role === 'USER' ? 'STUDENT' : (user?.role || 'STUDENT')}
+                  </p>
+                </div>
+                <div 
+                  onClick={() => {/* navigate('/profile') you can add navigation here later */}}
+                  className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center overflow-hidden hover:scale-105 transition-transform ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}
+                >
+                  {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-[#003049]">{getInitial()}</span>
+                  )}
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#003049] transition-colors" />
               </div>
-              <div className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center overflow-hidden ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}>
-                {user?.profilePicture ? (
-                  <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-bold text-[#003049]">{getInitial()}</span>
-                )}
+
+              {/* Profile Dropdown Menu */}
+              <div className="absolute right-0 top-full mt-4 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top-right z-50">
+                {/* Arrow pointer */}
+                <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"></div>
+                
+                <div className="p-4 border-b border-gray-100 flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center overflow-hidden mb-2 ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}>
+                    {user?.profilePicture ? (
+                      <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-bold text-[#003049]">{getInitial()}</span>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-[#003049]">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 font-medium">{user?.email}</p>
+                </div>
+                
+                <div className="py-2">
+                  <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors">
+                    <UserCircle className="w-4 h-4" /> Profile
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors">
+                    <Shield className="w-4 h-4" /> Change Password
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors border-b border-gray-50">
+                    <Settings className="w-4 h-4" /> Settings
+                  </a>
+                  
+                  <button onClick={handleLogout} className="w-full mt-1 flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-[#D62828] hover:bg-[#D62828]/10 transition-colors">
+                    <LogOut className="w-4 h-4" /> Log out
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -148,60 +208,45 @@ export default function Dashboard() {
 
         {/* Dashboard Body */}
         <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-8">
+          {activeTab === 'dashboard' && (
+            <>
+              {/* Welcome Banner */}
+              <section className="bg-[#003049] rounded-2xl md:rounded-[2.5rem] p-6 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-[#003049]/10">
+                <div className="relative z-10 max-w-2xl">
+                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 tracking-tight">
+                    Hello, {getFirstName()}! 👋
+                  </h1>
+                  <p className="text-blue-100/80 text-base md:text-lg mb-6 leading-relaxed font-medium">
+                    {isAdmin
+                      ? "Welcome to the admin dashboard. You can manage users, review system activity, and monitor notifications from here."
+                      : "Welcome to your Smart Campus portal. Use the sidebar to navigate between Facilities, Bookings, and Tickets as they become available."}
+                  </p>
+                </div>
+                <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-[#F77F00] opacity-20 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-20%] right-[10%] w-[400px] h-[400px] bg-[#D62828] opacity-20 rounded-full blur-[100px]"></div>
+              </section>
 
-          {/* Welcome Banner */}
-          <section className="bg-[#003049] rounded-2xl md:rounded-[2.5rem] p-6 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-[#003049]/10">
-            <div className="relative z-10 max-w-2xl">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 tracking-tight">
-                Hello, {getFirstName()}! 👋
-              </h1>
-              <p className="text-blue-100/80 text-base md:text-lg mb-6 leading-relaxed font-medium">
-                {isAdmin
-                  ? "Welcome to the admin dashboard. You can manage users, review system activity, and monitor notifications from here."
-                  : "Welcome to your Smart Campus portal. Use the sidebar to navigate between Facilities, Bookings, and Tickets as they become available."}
-              </p>
-            </div>
-            <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-[#F77F00] opacity-20 rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-20%] right-[10%] w-[400px] h-[400px] bg-[#D62828] opacity-20 rounded-full blur-[100px]"></div>
-          </section>
+              {/* Admin Panel */}
+              {isAdmin && (
+                <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Shield className="w-6 h-6 text-[#D62828]" />
+                    <h3 className="text-xl font-black text-[#003049]">Admin Panel</h3>
+                  </div>
+                  <p className="text-gray-500 mb-4">Manage user accounts, assign roles, and configure system settings.</p>
+                  <button 
+                    onClick={() => setActiveTab('users')}
+                    className="bg-[#D62828] text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center gap-2"
+                  >
+                    <Users className="w-5 h-5" /> Manage Users
+                  </button>
+                </div>
+              )}
+            </>
+          )}
 
-          {/* Module Status Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#003049]">
-              <div className="flex items-center gap-3 mb-2">
-                <Building className="w-5 h-5 text-[#003049]" />
-                <h3 className="font-bold text-[#003049]">Facilities</h3>
-              </div>
-              <p className="text-sm text-gray-500">Browse and manage campus resources. Module by Darshikan.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#F77F00]">
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar className="w-5 h-5 text-[#F77F00]" />
-                <h3 className="font-bold text-[#003049]">Bookings</h3>
-              </div>
-              <p className="text-sm text-gray-500">Request and track facility bookings. Module by Darsika.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828]">
-              <div className="flex items-center gap-3 mb-2">
-                <Wrench className="w-5 h-5 text-[#D62828]" />
-                <h3 className="font-bold text-[#003049]">Tickets</h3>
-              </div>
-              <p className="text-sm text-gray-500">Report and track maintenance issues. Module by Himansa.</p>
-            </div>
-          </div>
-
-          {/* Admin Panel */}
-          {isAdmin && (
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828]">
-              <div className="flex items-center gap-3 mb-3">
-                <Shield className="w-6 h-6 text-[#D62828]" />
-                <h3 className="text-xl font-black text-[#003049]">Admin Panel</h3>
-              </div>
-              <p className="text-gray-500 mb-4">Manage user accounts, assign roles, and configure system settings.</p>
-              <button className="bg-[#D62828] text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center gap-2">
-                <Users className="w-5 h-5" /> Manage Users
-              </button>
-            </div>
+          {activeTab === 'users' && isAdmin && (
+            <UserManagement />
           )}
         </div>
       </main>

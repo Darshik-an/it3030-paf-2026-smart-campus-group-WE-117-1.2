@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, Shield, ShieldAlert } from 'lucide-react';
+import { X, ShieldAlert } from 'lucide-react';
 import api from '../services/api';
 
 export default function AdminLogin() {
@@ -25,10 +25,10 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#003049] relative overflow-hidden">
-      {/* Background Blobs for Admin page */}
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#001f30] relative overflow-hidden">
+      {/* Background Blobs for Admin page (Darker, more serious tones) */}
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#D62828] opacity-20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#F77F00] opacity-30 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#003049] opacity-40 rounded-full blur-[100px] pointer-events-none"></div>
       
       <div className="bg-white/95 backdrop-blur-xl w-full max-w-[440px] p-10 rounded-[2.5rem] shadow-2xl relative z-10 border border-white/20">
         <Link to="/" className="absolute top-6 left-6 text-gray-400 hover:text-[#D62828] transition-colors">
@@ -39,15 +39,15 @@ export default function AdminLogin() {
 
         <div className="text-center mb-8 mt-4">
           <div className="w-16 h-16 bg-[#D62828] rounded-2xl flex items-center justify-center text-white font-black text-3xl mx-auto mb-5 shadow-lg shadow-[#D62828]/30">
-            <Shield className="w-8 h-8" />
+            <ShieldAlert className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-black text-[#003049] tracking-tight">Staff Portal</h1>
+          <h1 className="text-3xl font-black text-[#001f30] tracking-tight">Staff Portal</h1>
           <p className="text-gray-500 text-sm mt-2 font-medium">Authorized Personnel Only</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleAdminLogin}>
           <div>
-            <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider mb-2 ml-1">Staff Email</label>
+            <label className="block text-xs font-bold text-[#001f30] uppercase tracking-wider mb-2 ml-1">Staff Email</label>
             <input 
               type="email" 
               value={email}
@@ -58,7 +58,7 @@ export default function AdminLogin() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider mb-2 ml-1">Master Password</label>
+            <label className="block text-xs font-bold text-[#001f30] uppercase tracking-wider mb-2 ml-1">Password</label>
             <input 
               type="password" 
               placeholder="••••••••" 
@@ -74,13 +74,13 @@ export default function AdminLogin() {
             disabled={loading}
             className="w-full bg-[#D62828] text-white py-4 rounded-xl font-bold hover:bg-[#b01e1e] transition-all shadow-xl shadow-[#D62828]/20 disabled:opacity-70 active:scale-[0.98] mt-4"
           >
-            {loading ? 'Verifying...' : 'Sign In'}
+            {loading ? 'Verifying...' : 'Log in'}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-8 font-medium">
           Students must use the 
-          <Link to="/login" className="text-[#003049] font-bold hover:underline ml-1">
+          <Link to="/login" className="text-[#001f30] font-bold hover:underline ml-1">
             Student Portal
           </Link>
         </p>
