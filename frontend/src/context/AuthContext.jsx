@@ -13,7 +13,12 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (token) {
       if (token === 'dummy-token') {
-        setUser({ name: 'Guest User', role: 'STUDENT', email: 'guest@smartcampus.edu' });
+        setUser({ id: 100, name: 'Guest User', role: 'STUDENT', email: 'guest@smartcampus.edu' });
+        setLoading(false);
+        return;
+      }
+      if (token === 'dummy-admin-token') {
+        setUser({ id: 999, name: 'Admin User', role: 'ADMIN', email: 'admin@smartcampus.edu' });
         setLoading(false);
         return;
       }
