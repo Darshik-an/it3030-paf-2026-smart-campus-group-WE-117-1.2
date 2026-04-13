@@ -15,9 +15,13 @@ export default function AdminLogin() {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    // Bypassing real backend login for UI testing, just log in directly as admin
-    login('dummy-admin-token');
-    navigate('/dashboard');
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      login(response.data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid admin credentials');
+    }
   };
 
   return (

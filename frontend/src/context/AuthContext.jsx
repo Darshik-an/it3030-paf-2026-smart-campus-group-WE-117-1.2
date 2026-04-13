@@ -12,16 +12,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (token) {
-      if (token === 'dummy-token') {
-        setUser({ id: 100, name: 'Guest User', role: 'STUDENT', email: 'guest@smartcampus.edu' });
-        setLoading(false);
-        return;
-      }
-      if (token === 'dummy-admin-token') {
-        setUser({ id: 999, name: 'Admin User', role: 'ADMIN', email: 'admin@smartcampus.edu' });
-        setLoading(false);
-        return;
-      }
+      setLoading(true);
       axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -32,12 +23,14 @@ export function AuthProvider({ children }) {
         })
         .finally(() => setLoading(false));
     } else {
+      setUser(null);
       setLoading(false);
     }
   }, [token]);
 
   const login = (newToken) => {
     localStorage.setItem('token', newToken);
+    setLoading(true);
     setToken(newToken);
   };
 
@@ -45,6 +38,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
+    setLoading(false);
   };
 
   return (

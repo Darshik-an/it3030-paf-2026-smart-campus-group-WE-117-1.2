@@ -18,8 +18,12 @@ export default function LoginPage() {
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
-    // Bypassing real backend login for UI testing, just log in directly as a guest
-    login('dummy-token');
+    try {
+      const response = await api.post('/api/auth/login', { email, password });
+      login(response.data.token);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid user credentials');
+    }
   };
 
   return (
@@ -85,7 +89,7 @@ export default function LoginPage() {
           className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl font-bold text-sm text-gray-700 bg-white border-2 border-gray-100 hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.98]"
         >
           <img src="https://developers.google.com/identity/images/g-logo.png" className="w-5 h-5" alt="Google" />
-          Google OAuth Sign In
+          Google
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-8 font-medium">

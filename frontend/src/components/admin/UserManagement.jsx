@@ -19,7 +19,7 @@ export default function UserManagement() {
     try {
       setLoading(true);
       setError('');
-      const response = await api.get('/admin/users');
+      const response = await api.get('/api/admin/users');
       setUsers(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load users.');
@@ -34,7 +34,7 @@ export default function UserManagement() {
       setError('');
       setSuccessMsg('');
       
-      const response = await api.patch(`/admin/users/${userId}/role`, { role: newRole });
+      const response = await api.patch(`/api/admin/users/${userId}/role`, { role: newRole });
       
       // Use response data to ensure we have the backend's updated object
       setUsers(users.map(u => u.id === userId ? response.data : u));
@@ -60,7 +60,7 @@ export default function UserManagement() {
       setError('');
       setSuccessMsg('');
       
-      await api.delete(`/admin/users/${userId}`);
+      await api.delete(`/api/admin/users/${userId}`);
       
       setUsers(users.filter(u => u.id !== userId));
       setSuccessMsg('User deleted successfully.');

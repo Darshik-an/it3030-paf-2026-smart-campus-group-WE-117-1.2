@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
   if (user) return <Navigate to="/dashboard" />;
@@ -20,10 +21,40 @@ export default function SignupPage() {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
+  const getPasswordStrength = (pass) => {
+    let score = 0;
+    if (!pass) return { score: 0, label: '', color: 'bg-gray-200' };
+    if (pass.length > 5) score += 1;
+    if (pass.length > 8) score += 1;
+    if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass) && /[^A-Za-z0-9]/.test(pass)) score += 1;
+    
+    if (score === 1) return { score, label: 'Weak', color: 'bg-red-500' };
+    if (score === 2) return { score, label: 'Fair', color: 'bg-yellow-500' };
+    if (score >= 3) return { score, label: 'Strong', color: 'bg-green-500' };
+    return { score: 1, label: 'Weak', color: 'bg-red-500' };
+  };
+
+  const strength = getPasswordStrength(password);
+
   const handleSignup = async (e) => {
     e.preventDefault();
-    login('dummy-token');
-    navigate('/dashboard');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    try {
+      const response = await api.post('/api/auth/register', { 
+        name: `${firstName} ${lastName}`, 
+        email, 
+        password 
+      });
+      login(response.data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    }
   };
 
   return (
@@ -91,6 +122,30 @@ export default function SignupPage() {
               className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#F77F00] focus:ring-4 focus:ring-[#F77F00]/10 outline-none font-medium" 
               required 
             />
+            {password && (
+              <div className="mt-2 ml-1">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Password Strength</span>
+                  <span className={`text-[10px] font-bold ${strength.color.replace('bg-', 'text-')}`}>{strength.label}</span>
+                </div>
+                <div className="flex gap-1 h-1.5">
+                  <div className={`flex-1 rounded-full ${password.length > 0 ? strength.color : 'bg-gray-200'} transition-all duration-300`}></div>
+                  <div className={`flex-1 rounded-full ${strength.score >= 2 ? strength.color : 'bg-gray-200'} transition-all duration-300`}></div>
+                  <div className={`flex-1 rounded-full ${strength.score >= 3 ? strength.color : 'bg-gray-200'} transition-all duration-300`}></div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider mb-2 ml-1">Confirm Password</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#F77F00] focus:ring-4 focus:ring-[#F77F00]/10 outline-none font-medium" 
+              required 
+            />
           </div>
           
           <button 
@@ -113,7 +168,7 @@ export default function SignupPage() {
           className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl font-bold text-sm text-gray-700 bg-white border-2 border-gray-100 hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.98]"
         >
           <img src="https://developers.google.com/identity/images/g-logo.png" className="w-5 h-5" alt="Google" />
-          Google OAuth Sign In
+          Google
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-8 font-medium">
