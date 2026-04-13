@@ -28,22 +28,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#003049] relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 py-10 sm:p-6 bg-[#003049] relative overflow-x-hidden">
       {/* Background Blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#F77F00] opacity-20 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#D62828] opacity-15 rounded-full blur-[100px] pointer-events-none"></div>
       
-      <div className="bg-white/95 backdrop-blur-xl w-full max-w-[440px] p-10 rounded-[2.5rem] shadow-2xl relative z-10 border border-white/20">
-        <Link to="/" className="absolute top-6 left-6 text-gray-400 hover:text-[#003049] transition-colors">
+      <div className="bg-white/95 backdrop-blur-xl w-full max-w-[440px] p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl relative z-10 border border-white/20">
+        <Link to="/" className="absolute top-5 sm:top-6 left-5 sm:left-6 text-gray-400 hover:text-[#003049] transition-colors">
            <X className="w-6 h-6" />
         </Link>
 
         {error && <div className="text-[#D62828] text-center text-sm mt-2 mb-2 font-bold bg-[#D62828]/10 p-2 rounded-lg">{error}</div>}
 
-        <div className="text-center mb-8 mt-4">
-          <div className="w-16 h-16 bg-[#FCBF49] rounded-2xl flex items-center justify-center text-[#003049] font-black text-3xl mx-auto mb-5 shadow-lg transform rotate-3">SC</div>
-          <h1 className="text-3xl font-black text-[#003049] tracking-tight">Welcome Back</h1>
-          <p className="text-gray-500 text-sm mt-2 font-medium">Smart Campus Operations Hub</p>
+        <div className="text-center mb-6 sm:mb-8 mt-4">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#FCBF49] rounded-2xl flex items-center justify-center text-[#003049] font-black text-2xl sm:text-3xl mx-auto mb-4 sm:mb-5 shadow-lg transform rotate-3">SC</div>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#003049] tracking-tight">Welcome Back</h1>
+          <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-2 font-medium">Smart Campus Operations Hub</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleEmailLogin}>
@@ -59,7 +59,10 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider mb-2 ml-1">Password</label>
+            <div className="flex justify-between items-center mb-2 mx-1">
+              <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider">Password</label>
+              <Link to="#" className="text-[11px] font-bold text-[#F77F00] hover:text-[#e67600] hover:underline transition-colors">Forgot password?</Link>
+            </div>
             <div className="relative">
               <input 
                 type={showPassword ? "text" : "password"}

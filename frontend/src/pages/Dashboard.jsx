@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Building, Calendar, Wrench, Users, Shield, LogOut,
-  LayoutDashboard, Menu, X, Settings, UserCircle
+  LayoutDashboard, Menu, X, Settings, UserCircle, ChevronDown
 } from 'lucide-react';
 import NotificationPanel from '../components/NotificationPanel';
 import UserManagement from '../components/admin/UserManagement';
@@ -148,19 +148,59 @@ export default function Dashboard() {
             <NotificationPanel />
 
             {/* User info */}
-            <div className="flex items-center gap-3 border-l border-gray-200 pl-4 md:pl-8">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-[#003049] leading-tight">{user?.name || 'User'}</p>
-                <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-[#D62828]' : 'text-[#F77F00]'}`}>
-                  {user?.role || 'USER'}
-                </p>
+            <div className="relative group cursor-pointer border-l border-gray-200 pl-4 md:pl-8">
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold text-[#003049] leading-tight">{user?.name || 'User'}</p>
+                  <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-[#D62828]' : 'text-[#F77F00]'}`}>
+                    {user?.role === 'USER' ? 'STUDENT' : (user?.role || 'STUDENT')}
+                  </p>
+                </div>
+                <div 
+                  onClick={() => {/* navigate('/profile') you can add navigation here later */}}
+                  className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center overflow-hidden hover:scale-105 transition-transform ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}
+                >
+                  {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-[#003049]">{getInitial()}</span>
+                  )}
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#003049] transition-colors" />
               </div>
-              <div className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center overflow-hidden ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}>
-                {user?.profilePicture ? (
-                  <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-bold text-[#003049]">{getInitial()}</span>
-                )}
+
+              {/* Profile Dropdown Menu */}
+              <div className="absolute right-0 top-full mt-4 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top-right z-50">
+                {/* Arrow pointer */}
+                <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"></div>
+                
+                <div className="p-4 border-b border-gray-100 flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center overflow-hidden mb-2 ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}>
+                    {user?.profilePicture ? (
+                      <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-bold text-[#003049]">{getInitial()}</span>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-[#003049]">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 font-medium">{user?.email}</p>
+                </div>
+                
+                <div className="py-2">
+                  <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors">
+                    <UserCircle className="w-4 h-4" /> Profile
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors">
+                    <Shield className="w-4 h-4" /> Change Password
+                  </a>
+                  <a href="#" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors border-b border-gray-50">
+                    <Settings className="w-4 h-4" /> Settings
+                  </a>
+                  
+                  <button onClick={handleLogout} className="w-full mt-1 flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-[#D62828] hover:bg-[#D62828]/10 transition-colors">
+                    <LogOut className="w-4 h-4" /> Log out
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -185,31 +225,6 @@ export default function Dashboard() {
                 <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-[#F77F00] opacity-20 rounded-full blur-[120px]"></div>
                 <div className="absolute bottom-[-20%] right-[10%] w-[400px] h-[400px] bg-[#D62828] opacity-20 rounded-full blur-[100px]"></div>
               </section>
-
-              {/* Module Status Info */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#003049]">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Building className="w-5 h-5 text-[#003049]" />
-                    <h3 className="font-bold text-[#003049]">Facilities</h3>
-                  </div>
-                  <p className="text-sm text-gray-500">Browse and manage campus resources. Module by Darshikan.</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#F77F00]">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Calendar className="w-5 h-5 text-[#F77F00]" />
-                    <h3 className="font-bold text-[#003049]">Bookings</h3>
-                  </div>
-                  <p className="text-sm text-gray-500">Request and track facility bookings. Module by Darsika.</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828]">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Wrench className="w-5 h-5 text-[#D62828]" />
-                    <h3 className="font-bold text-[#003049]">Tickets</h3>
-                  </div>
-                  <p className="text-sm text-gray-500">Report and track maintenance issues. Module by Himansa.</p>
-                </div>
-              </div>
 
               {/* Admin Panel */}
               {isAdmin && (
