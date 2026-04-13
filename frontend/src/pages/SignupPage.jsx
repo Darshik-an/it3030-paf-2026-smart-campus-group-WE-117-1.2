@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import api from '../services/api';
 
 export default function SignupPage() {
@@ -13,6 +13,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
 
   if (user) return <Navigate to="/dashboard" />;
@@ -114,14 +116,24 @@ export default function SignupPage() {
           </div>
           <div>
             <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider mb-2 ml-1">Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#F77F00] focus:ring-4 focus:ring-[#F77F00]/10 outline-none font-medium" 
-              required 
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-5 py-3.5 pr-12 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#F77F00] focus:ring-4 focus:ring-[#F77F00]/10 outline-none font-medium" 
+                required 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
             {password && (
               <div className="mt-2 ml-1">
                 <div className="flex justify-between items-center mb-1">
@@ -138,14 +150,24 @@ export default function SignupPage() {
           </div>
           <div>
             <label className="block text-xs font-bold text-[#003049] uppercase tracking-wider mb-2 ml-1">Confirm Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#F77F00] focus:ring-4 focus:ring-[#F77F00]/10 outline-none font-medium" 
-              required 
-            />
+            <div className="relative">
+              <input 
+                type={showConfirmPassword ? "text" : "password"} 
+                placeholder="••••••••" 
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-5 py-3.5 pr-12 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#F77F00] focus:ring-4 focus:ring-[#F77F00]/10 outline-none font-medium" 
+                required 
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex="-1"
+              >
+                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
           
           <button 
