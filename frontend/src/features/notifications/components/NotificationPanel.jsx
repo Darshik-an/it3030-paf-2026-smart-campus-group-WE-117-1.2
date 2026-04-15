@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../services/api';
 import { Bell, Calendar, Wrench, AlertCircle, MessageSquare, XCircle, CheckCircle2 } from 'lucide-react';
 
 export default function NotificationPanel() {

@@ -5,7 +5,7 @@ import {
   Building, Calendar, Wrench, Users, Shield, LogOut,
   LayoutDashboard, Menu, X, Settings, UserCircle
 } from 'lucide-react';
-import NotificationPanel from '../components/NotificationPanel';
+import NotificationPanel from '../features/notifications/components/NotificationPanel';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
