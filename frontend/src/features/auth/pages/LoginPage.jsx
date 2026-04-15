@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { X, Eye, EyeOff } from 'lucide-react';
-import api from '../services/api';
+import api from '../../../services/api';
 
 export default function LoginPage() {
   const { user, login, loading } = useAuth();

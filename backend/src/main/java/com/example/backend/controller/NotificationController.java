@@ -1,7 +1,7 @@
-package com.example.backend.controller;
+package com.example.backend.controller.auth;
 
 import com.example.backend.model.Notification;
-import com.example.backend.model.User;
+import com.example.backend.model.auth.User;
 import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
