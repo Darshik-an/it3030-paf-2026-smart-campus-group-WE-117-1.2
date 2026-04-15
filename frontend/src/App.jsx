@@ -6,6 +6,7 @@ import AdminLogin from './pages/AdminLogin';
 import SignupPage from './pages/SignupPage';
 import OAuth2Callback from './pages/OAuth2Callback';
 import Dashboard from './pages/Dashboard';
+import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -20,6 +21,11 @@ function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           } />
           <Route path="/" element={<LandingPage />} />

@@ -36,6 +36,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setRole(User.Role.USER);
+        user.setLastLoggedIn(java.time.LocalDateTime.now());
 
         userRepository.save(user);
 
@@ -52,6 +53,9 @@ public class AuthController {
         );
 
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        user.setLastLoggedIn(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
         String token = jwtUtil.generateToken(user.getEmail());
         
         Map<String, String> response = new HashMap<>();

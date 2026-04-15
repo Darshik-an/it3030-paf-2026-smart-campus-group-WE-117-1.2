@@ -43,6 +43,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user.setEmail(email);
             user.setName(name);
             user.setProfilePicture(picture);
+            user.setLastLoggedIn(java.time.LocalDateTime.now());
             // First user could be ADMIN or standard logic. Defaulting to USER
             user.setRole(User.Role.USER); 
             userRepository.save(user);
@@ -50,6 +51,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user = existingUser.get();
             user.setName(name);
             user.setProfilePicture(picture);
+            user.setLastLoggedIn(java.time.LocalDateTime.now());
             userRepository.save(user);
         }
 
