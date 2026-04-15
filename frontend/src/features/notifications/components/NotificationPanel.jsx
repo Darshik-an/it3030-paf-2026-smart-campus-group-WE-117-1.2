@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../auth/context/AuthContext';
 import api from '../../../services/api';
-import { Bell, Calendar, Wrench, AlertCircle, MessageSquare, XCircle, CheckCircle2 } from 'lucide-react';
+import { Bell, Calendar, Wrench, AlertCircle, MessageSquare, XCircle, CheckCircle2, CheckCheck, Settings, Mail } from 'lucide-react';
 
 export default function NotificationPanel() {
   const { user } = useAuth();
@@ -166,15 +166,31 @@ export default function NotificationPanel() {
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 transform origin-top-right transition-all">
           <div className="bg-[#003049] p-4 flex items-center justify-between">
             <h3 className="font-bold text-white">Notifications</h3>
-            {unreadCount > 0 && (
+            <div className="flex items-center gap-1">
+              <button 
+                title="View Unread"
+                className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer flex items-center justify-center relative"
+              >
+                <Mail className="w-4 h-4" />
+                {unreadCount > 0 && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#F77F00] rounded-full"></span>}
+              </button>
               <button 
                 onClick={handleMarkAllRead}
-                className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
+                title="Mark all as done"
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
+                  unreadCount > 0 ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-white/30 cursor-not-allowed'
+                }`}
+                disabled={unreadCount === 0}
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Mark all read
+                <CheckCheck className="w-4 h-4" />
               </button>
-            )}
+              <button 
+                title="Notification Settings"
+                className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <div className="max-h-[400px] overflow-y-auto">

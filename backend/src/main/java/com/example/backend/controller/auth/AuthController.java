@@ -1,7 +1,7 @@
-package com.example.backend.controller;
+package com.example.backend.controller.auth;
 
-import com.example.backend.model.User;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.model.auth.User;
+import com.example.backend.repository.auth.UserRepository;
 import com.example.backend.security.JwtUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already exists");
+            return ResponseEntity.badRequest().body(Map.of("message", "Email already exists"));
         }
 
         User user = new User();
@@ -36,6 +36,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setRole(User.Role.USER);
+        user.setLastLoggedIn(java.time.LocalDateTime.now());
 
         userRepository.save(user);
 
@@ -52,6 +53,9 @@ public class AuthController {
         );
 
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        user.setLastLoggedIn(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
         String token = jwtUtil.generateToken(user.getEmail());
         
         Map<String, String> response = new HashMap<>();

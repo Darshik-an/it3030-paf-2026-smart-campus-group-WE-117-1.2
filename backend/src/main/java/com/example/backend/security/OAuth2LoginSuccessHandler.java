@@ -1,7 +1,7 @@
 package com.example.backend.security;
 
-import com.example.backend.model.User;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.model.auth.User;
+import com.example.backend.repository.auth.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,6 +43,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user.setEmail(email);
             user.setName(name);
             user.setProfilePicture(picture);
+            user.setLastLoggedIn(java.time.LocalDateTime.now());
             // First user could be ADMIN or standard logic. Defaulting to USER
             user.setRole(User.Role.USER); 
             userRepository.save(user);
@@ -50,6 +51,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user = existingUser.get();
             user.setName(name);
             user.setProfilePicture(picture);
+            user.setLastLoggedIn(java.time.LocalDateTime.now());
             userRepository.save(user);
         }
 
