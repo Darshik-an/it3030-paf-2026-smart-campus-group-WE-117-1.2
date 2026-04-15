@@ -1,6 +1,6 @@
-package com.example.backend.repository;
+package com.example.backend.repository.notification;
 
-import com.example.backend.model.Notification;
+import com.example.backend.model.notification.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
