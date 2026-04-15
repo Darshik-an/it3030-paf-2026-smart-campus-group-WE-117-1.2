@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
+import api from '../../../../services/api';
 import { Loader2, Trash2, Shield, User, Wrench, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function UserManagement() {

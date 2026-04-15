@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../features/auth/context/AuthContext';
 import api from '../services/api';
 import { Bell, Calendar, Wrench, AlertCircle, MessageSquare, XCircle, CheckCircle2, CheckCheck, Settings, Mail } from 'lucide-react';
 

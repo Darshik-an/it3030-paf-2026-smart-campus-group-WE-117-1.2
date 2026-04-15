@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, LogOut, Settings, UserCircle, Shield, ChevronDown } from 'lucide-react';
 import NotificationPanel from '../NotificationPanel';

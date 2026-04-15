@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../features/auth/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Users } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
-import UserManagement from '../components/admin/UserManagement';
+import UserManagement from '../features/auth/components/admin/UserManagement';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
