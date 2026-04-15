@@ -1,7 +1,7 @@
-package com.example.backend.controller;
+package com.example.backend.controller.auth;
 
-import com.example.backend.model.User;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.model.auth.User;
+import com.example.backend.repository.auth.UserRepository;
 import com.example.backend.security.JwtUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.backend.model;
+package com.example.backend.model.auth;
 
 import jakarta.persistence.*;
 import lombok.Data;
