@@ -1,4 +1,4 @@
-package com.example.backend.controller.auth;
+package com.example.backend.controller;
 
 import com.example.backend.model.NotificationType;
 import com.example.backend.model.auth.User;
