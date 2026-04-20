@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './features/auth/pages/LoginPage';
@@ -8,6 +8,7 @@ import OAuth2Callback from './features/auth/pages/OAuth2Callback';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
+import TicketingDashboard from "./pages/Ticketting/ticketingdashboardpage";
 
 function App() {
   return (
@@ -26,6 +27,11 @@ function App() {
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/tickets" element={
+            <ProtectedRoute>
+              <TicketingDashboard />
             </ProtectedRoute>
           } />
           <Route path="/" element={<LandingPage />} />
