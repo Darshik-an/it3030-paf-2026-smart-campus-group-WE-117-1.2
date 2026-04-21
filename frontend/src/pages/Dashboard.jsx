@@ -5,6 +5,9 @@ import { Shield, Users } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import UserManagement from '../features/auth/components/admin/UserManagement';
+import {
+  BookingsDashboard
+} from '../features/bookings';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -95,6 +98,19 @@ export default function Dashboard() {
 
           {activeTab === 'users' && isAdmin && (
             <UserManagement />
+          )}
+
+          {activeTab === 'facilities' && (
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Facilities Management</h2>
+              <p className="text-gray-600">Facilities management coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'bookings' && (
+            <div className="w-full">
+              <BookingsDashboard />
+            </div>
           )}
         </div>
       </main>
