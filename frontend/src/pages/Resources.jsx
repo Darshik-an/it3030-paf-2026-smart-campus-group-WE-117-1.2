@@ -25,7 +25,7 @@ const Resources = () => {
       }
       setResources(res.data);
     } catch (err) {
-      setAlert({ type: "error", message: "Failed to load resources." });
+      setAlert({ type: "error", message: "Failed to load facilities." });
     }
     setLoading(false);
   };
@@ -45,10 +45,10 @@ const Resources = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this resource?")) return;
+    if (!window.confirm("Are you sure you want to delete this facility?")) return;
     try {
       await api.delete(`/resources/${id}`);
-      setAlert({ type: "success", message: "Resource deleted." });
+      setAlert({ type: "success", message: "Facility deleted." });
       fetchResources(filter);
     } catch {
       setAlert({ type: "error", message: "Delete failed." });
@@ -59,10 +59,10 @@ const Resources = () => {
     try {
       if (editResource) {
         await api.put(`/resources/${editResource.id}`, data);
-        setAlert({ type: "success", message: "Resource updated." });
+        setAlert({ type: "success", message: "Facility updated." });
       } else {
         await api.post("/resources", data);
-        setAlert({ type: "success", message: "Resource added." });
+        setAlert({ type: "success", message: "Facility added." });
       }
       setShowForm(false);
       fetchResources(filter);
@@ -79,13 +79,13 @@ const Resources = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-[#003049]">Resources</h1>
+        <h1 className="text-2xl font-bold text-[#003049]">Facilities</h1>
         {user?.role === "ADMIN" && (
           <button
             className="bg-[#F77F00] text-white px-4 py-2 rounded hover:bg-[#FCBF49]"
             onClick={handleAdd}
           >
-            Add Resource
+            Add Facility
           </button>
         )}
       </div>
@@ -113,7 +113,7 @@ const Resources = () => {
         />
       )}
       {!loading && resources.length === 0 && (
-        <div className="text-center py-10 text-[#003049]">No resources found</div>
+        <div className="text-center py-10 text-[#003049]">No facilities found</div>
       )}
     </div>
   );

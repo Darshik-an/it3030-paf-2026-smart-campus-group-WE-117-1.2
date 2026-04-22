@@ -85,19 +85,13 @@ export default function Sidebar({
               <span>Dashboard</span>
             </button>
             <button 
-              onClick={() => handleNavigation('/dashboard/resources', 'resources')}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'resources') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              <Building className="w-5 h-5" />
-              <span>Resources</span>
-            </button>
-            <button 
-              onClick={() => handleNavigation('/dashboard', 'facilities')}
+              onClick={() => handleNavigation('/dashboard/facilities', 'facilities')}
               className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'facilities') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
             >
               <Building className="w-5 h-5" />
               <span>Facilities</span>
             </button>
+
             <button 
               onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
               className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}

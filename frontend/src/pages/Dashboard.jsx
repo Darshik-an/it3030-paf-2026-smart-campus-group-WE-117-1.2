@@ -36,8 +36,8 @@ export default function Dashboard() {
       setActiveTab('bookings');
       return;
     }
-    if (location.pathname.startsWith('/dashboard/resources')) {
-      setActiveTab('resources');
+    if (location.pathname.startsWith('/dashboard/facilities')) {
+      setActiveTab('facilities');
       return;
     }
     if (location.pathname === '/dashboard') {
@@ -138,14 +138,9 @@ export default function Dashboard() {
             <UserManagement />
           )}
 
-          {activeTab === 'facilities' && (
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Facilities Management</h2>
-              <p className="text-gray-600">Facilities management coming soon...</p>
-            </div>
-          )}
 
-          {activeTab === 'resources' && (
+
+          {activeTab === 'facilities' && (
             <div className="w-full">
               <Resources />
             </div>

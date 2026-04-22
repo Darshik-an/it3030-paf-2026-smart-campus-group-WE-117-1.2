@@ -46,7 +46,7 @@ const ResourceForm = ({ resource, onClose, onSubmit }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
       <form className="bg-white p-6 rounded shadow w-full max-w-md" onSubmit={handleSubmit}>
-        <h2 className="text-xl font-bold mb-4 text-[#003049]">{resource ? "Edit Resource" : "Add Resource"}</h2>
+        <h2 className="text-xl font-bold mb-4 text-[#003049]">{resource ? "Edit Facility" : "Add Facility"}</h2>
         {error && <div className="mb-2 text-red-600">{error}</div>}
         <div className="mb-2">
           <label className="block mb-1 font-semibold">Name</label>

@@ -32,7 +32,7 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/resources" element={
+            <Route path="/dashboard/facilities" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
