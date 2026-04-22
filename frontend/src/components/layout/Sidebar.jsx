@@ -92,7 +92,7 @@ export default function Sidebar({
               <span>Facilities</span>
             </button>
             <button 
-              onClick={() => handleNavigation('/dashboard', 'bookings')}
+              onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
               className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
             >
               <Calendar className="w-5 h-5" />

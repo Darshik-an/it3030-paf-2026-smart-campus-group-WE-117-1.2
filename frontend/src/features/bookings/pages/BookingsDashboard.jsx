@@ -33,13 +33,13 @@ const BookingsDashboard = () => {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              to="/my-bookings"
+              to="/dashboard/bookings/my"
               className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#003049] hover:bg-slate-100 transition"
             >
               Go to My Bookings
             </Link>
             <Link
-              to="/bookings/create"
+              to="/dashboard/bookings/create"
               className="inline-flex items-center justify-center rounded-xl bg-[#F77F00] px-5 py-3 text-sm font-bold text-white hover:bg-[#dc7304] transition"
             >
               Create Booking
@@ -70,7 +70,7 @@ const BookingsDashboard = () => {
       <section className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg md:text-xl font-bold text-slate-900">Recent Activity</h3>
-          <Link to="/my-bookings" className="text-sm font-semibold text-[#003049] hover:underline">
+          <Link to="/dashboard/bookings/my" className="text-sm font-semibold text-[#003049] hover:underline">
             View all
           </Link>
         </div>

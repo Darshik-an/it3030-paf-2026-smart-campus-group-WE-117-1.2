@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import { BookingProvider } from './features/bookings/context/BookingContext';
 import LandingPage from './pages/LandingPage';
@@ -9,12 +9,6 @@ import OAuth2Callback from './features/auth/pages/OAuth2Callback';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
-import {
-  BookingsDashboard,
-  CreateBooking,
-  MyBookings,
-  BookingDetails
-} from './features/bookings';
 
 function App() {
   return (
@@ -31,31 +25,21 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/bookings/*" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/profile" element={
               <ProtectedRoute>
                 <ProfilePage />
               </ProtectedRoute>
             } />
-            <Route path="/bookings/create" element={
-              <ProtectedRoute>
-                <CreateBooking />
-              </ProtectedRoute>
-            } />
-            <Route path="/bookings" element={
-              <ProtectedRoute>
-                <BookingsDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/my-bookings" element={
-              <ProtectedRoute>
-                <MyBookings />
-              </ProtectedRoute>
-            } />
-            <Route path="/bookings/:id" element={
-              <ProtectedRoute>
-                <BookingDetails />
-              </ProtectedRoute>
-            } />
+
+            <Route path="/bookings" element={<Navigate to="/dashboard/bookings" replace />} />
+            <Route path="/bookings/create" element={<Navigate to="/dashboard/bookings/create" replace />} />
+            <Route path="/my-bookings" element={<Navigate to="/dashboard/bookings/my" replace />} />
+            <Route path="/bookings/:id" element={<Navigate to="/dashboard/bookings" replace />} />
             <Route path="/" element={<LandingPage />} />
           </Routes>
         </BrowserRouter>
