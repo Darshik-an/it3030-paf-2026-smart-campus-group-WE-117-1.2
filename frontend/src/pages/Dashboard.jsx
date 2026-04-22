@@ -11,6 +11,7 @@ import {
   MyBookings,
   BookingDetails
 } from '../features/bookings';
+import Resources from './Resources';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -33,6 +34,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (location.pathname.startsWith('/dashboard/bookings')) {
       setActiveTab('bookings');
+      return;
+    }
+    if (location.pathname.startsWith('/dashboard/resources')) {
+      setActiveTab('resources');
       return;
     }
     if (location.pathname === '/dashboard') {
@@ -137,6 +142,12 @@ export default function Dashboard() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Facilities Management</h2>
               <p className="text-gray-600">Facilities management coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'resources' && (
+            <div className="w-full">
+              <Resources />
             </div>
           )}
 
