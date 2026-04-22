@@ -52,7 +52,7 @@ const MyBookings = () => {
         <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/dashboard/bookings')}
               className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold tracking-wide hover:bg-white/20 transition"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +69,7 @@ const MyBookings = () => {
             </p>
           </div>
           <Link
-            to="/bookings/create"
+            to="/dashboard/bookings/create"
             className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#003049] shadow hover:bg-slate-100 transition"
           >
             + New Booking
@@ -137,7 +137,7 @@ const MyBookings = () => {
               : `You have no ${filterStatus.toLowerCase()} bookings.`}
           </p>
           <Link
-            to="/bookings/create"
+            to="/dashboard/bookings/create"
             className="inline-flex items-center rounded-xl bg-[#003049] px-6 py-3 text-white font-semibold hover:bg-[#022338] transition"
           >
             Create a Booking
