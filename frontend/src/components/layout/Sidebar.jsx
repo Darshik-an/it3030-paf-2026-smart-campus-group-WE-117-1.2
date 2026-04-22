@@ -99,8 +99,8 @@ export default function Sidebar({
               <span>Bookings</span>
             </button>
             <button 
-              onClick={() => handleNavigation('/dashboard', 'tickets')}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'tickets') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+              onClick={() => handleNavigation('/tickets')}
+              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/tickets') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
             >
               <Wrench className="w-5 h-5" />
               <span>Tickets</span>
