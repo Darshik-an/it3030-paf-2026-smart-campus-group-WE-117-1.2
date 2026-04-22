@@ -9,7 +9,6 @@ import OAuth2Callback from './features/auth/pages/OAuth2Callback';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
-<<<<<<< HEAD
 import TicketingDashboard from './pages/Ticketting/ticketingdashboardpage';
 import {
   BookingsDashboard,
@@ -17,8 +16,6 @@ import {
   MyBookings,
   BookingDetails
 } from './features/bookings';
-=======
->>>>>>> e765079 (Updated my bookings pages)
 
 function App() {
   return (
@@ -45,7 +42,6 @@ function App() {
                 <ProfilePage />
               </ProtectedRoute>
             } />
-<<<<<<< HEAD
             <Route path="/bookings/create" element={
               <ProtectedRoute>
                 <CreateBooking />
@@ -71,13 +67,11 @@ function App() {
                 <TicketingDashboard />
               </ProtectedRoute>
             } />
-=======
 
             <Route path="/bookings" element={<Navigate to="/dashboard/bookings" replace />} />
             <Route path="/bookings/create" element={<Navigate to="/dashboard/bookings/create" replace />} />
             <Route path="/my-bookings" element={<Navigate to="/dashboard/bookings/my" replace />} />
             <Route path="/bookings/:id" element={<Navigate to="/dashboard/bookings" replace />} />
->>>>>>> e765079 (Updated my bookings pages)
             <Route path="/" element={<LandingPage />} />
           </Routes>
         </BrowserRouter>
