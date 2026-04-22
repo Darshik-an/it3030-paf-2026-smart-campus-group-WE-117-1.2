@@ -55,7 +55,7 @@ export default function TicketingDashboard() {
                 </div>
                 <button
                   onClick={() => setShowForm(true)}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"
+                  className="bg-orange-500 text-white px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-2 hover:bg-[#D62828]"
                 >
                   + Create New Ticket
                 </button>
@@ -63,21 +63,21 @@ export default function TicketingDashboard() {
 
               {/* Stat Cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-100 rounded-xl p-4 border border-gray-200">
-                  <div className="w-8 h-8 bg-blue-200 text-blue-700 rounded-lg flex items-center justify-center mb-3">🎫</div>
+                <div className="bg-[#FCBF49] rounded-xl p-4 border border-gray-200">
+                  <div className="w-8 h-8 bg-[#F77F00] text-blue-700 rounded-lg flex items-center justify-center mb-3">🎫</div>
                   <span className="text-[10px] font-semibold bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">URGENT</span>
                   <p className="text-sm text-gray-600 mt-2">Active Tickets</p>
                   <p className="text-3xl font-bold">24</p>
                   <p className="text-xs text-gray-700">↗ +4 since yesterday</p>
                 </div>
-                <div className="bg-yellow-100 rounded-xl p-4 border border-gray-200">
-                  <div className="w-8 h-8 bg-yellow-200 text-yellow-700 rounded-lg flex items-center justify-center mb-3">⏳</div>
+                <div className="bg-[#F77F00] rounded-xl p-4 border border-gray-200">
+                  <div className="w-8 h-8 bg-[#FCBF49] text-yellow-700 rounded-lg flex items-center justify-center mb-3">⏳</div>
                   <p className="text-sm text-gray-600">Pending Review</p>
                   <p className="text-3xl font-bold">12</p>
                   <p className="text-xs text-yellow-700">⚠ Requires immediate triage</p>
                 </div>
-                <div className="bg-green-100 rounded-xl p-4 border border-gray-200">
-                  <div className="w-8 h-8 bg-green-200 text-green-700 rounded-lg flex items-center justify-center mb-3">✅</div>
+                <div className="bg-[#D62828] rounded-xl p-4 border border-gray-200">
+                  <div className="w-8 h-8 bg-[#003049] text-green-700 rounded-lg flex items-center justify-center mb-3">✅</div>
                   <p className="text-sm text-gray-600">Resolved this Week</p>
                   <p className="text-3xl font-bold">148</p>
                   <p className="text-xs text-green-700">✓ 98% SLA compliance</p>
