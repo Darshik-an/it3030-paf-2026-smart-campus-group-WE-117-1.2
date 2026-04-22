@@ -97,8 +97,20 @@ export default function Sidebar({
               // Regular User and Admin Menu Items
               <>
                 {renderNavButton(Building, 'Facilities', 'facilities')}
-                {renderNavButton(Calendar, 'Bookings', 'bookings')}
-                {renderNavButton(Wrench, 'Tickets', 'tickets')}
+                <button
+                  onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'bookings') || location.pathname.startsWith('/dashboard/bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span>Bookings</span>
+                </button>
+                <button
+                  onClick={() => handleNavigation('/tickets', 'tickets')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/tickets') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Wrench className="w-5 h-5" />
+                  <span>Tickets</span>
+                </button>
               </>
             ) : (
               // Staff Conditional Layouts

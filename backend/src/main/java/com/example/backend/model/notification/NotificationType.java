@@ -1,4 +1,4 @@
-package com.example.backend.model;
+package com.example.backend.model.notification;
 
 public enum NotificationType {
     BOOKING_APPROVED,

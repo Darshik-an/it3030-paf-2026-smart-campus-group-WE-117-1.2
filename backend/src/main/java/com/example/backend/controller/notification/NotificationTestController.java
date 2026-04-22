@@ -1,8 +1,8 @@
-package com.example.backend.controller;
+package com.example.backend.controller.notification;
 
-import com.example.backend.model.NotificationType;
+import com.example.backend.model.notification.NotificationType;
 import com.example.backend.model.auth.User;
-import com.example.backend.service.NotificationService;
+import com.example.backend.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

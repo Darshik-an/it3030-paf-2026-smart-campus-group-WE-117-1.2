@@ -1,8 +1,8 @@
-package com.example.backend.service;
+package com.example.backend.service.notification;
 
-import com.example.backend.model.Notification;
-import com.example.backend.model.NotificationType;
-import com.example.backend.repository.NotificationRepository;
+import com.example.backend.model.notification.Notification;
+import com.example.backend.model.notification.NotificationType;
+import com.example.backend.repository.notification.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
