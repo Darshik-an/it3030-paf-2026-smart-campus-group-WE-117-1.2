@@ -24,22 +24,33 @@ public class DataInitializer {
     private final PasswordEncoder passwordEncoder;
 
     @Bean
-    public CommandLineRunner seedAdmin() {
+    public CommandLineRunner seedUsers() {
         return args -> {
-            if (userRepository.findByEmail(ADMIN_EMAIL).isPresent()) {
-                log.info("Admin user already exists: {}", ADMIN_EMAIL);
-                return;
-            }
-
-            User admin = new User();
-            admin.setEmail(ADMIN_EMAIL);
-            admin.setName(ADMIN_NAME);
-            admin.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
-            admin.setRole(User.Role.ADMIN);
-            admin.setLastLoggedIn(LocalDateTime.now());
-            userRepository.save(admin);
-
-            log.info("Admin user seeded: {} / {}", ADMIN_EMAIL, ADMIN_PASSWORD);
+            seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
+            seedUserIfNotExists("user@smartcampus.edu", "Regular User", "User@123", User.Role.USER);
+            seedUserIfNotExists("lecturer@smartcampus.edu", "Lecturer User", "Lecturer@123", User.Role.LECTURER);
+            seedUserIfNotExists("instructor@smartcampus.edu", "Instructor User", "Instructor@123", User.Role.INSTRUCTOR);
+            seedUserIfNotExists("facility_manager@smartcampus.edu", "Facility Manager", "Manager@123", User.Role.FACILITY_MANAGER);
+            seedUserIfNotExists("coordinator@smartcampus.edu", "Coordinator User", "Coordinator@123", User.Role.COORDINATOR);
+            seedUserIfNotExists("support@smartcampus.edu", "Student Support", "Support@123", User.Role.STUDENT_SUPPORT);
+            seedUserIfNotExists("technician@smartcampus.edu", "Technician User", "Technician@123", User.Role.TECHNICIAN);
         };
+    }
+
+    private void seedUserIfNotExists(String email, String name, String password, User.Role role) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            log.info("{} user already exists: {}", role.name(), email);
+            return;
+        }
+
+        User user = new User();
+        user.setEmail(email);
+        user.setName(name);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(role);
+        user.setLastLoggedIn(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("{} user seeded: {} / {}", role.name(), email, password);
     }
 }

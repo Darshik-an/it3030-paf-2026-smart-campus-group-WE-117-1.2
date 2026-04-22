@@ -109,6 +109,92 @@ export default function Dashboard() {
           {activeTab === 'users' && isAdmin && (
             <UserManagement />
           )}
+
+          {activeTab === 'settings' && isAdmin && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828] flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#D62828] mb-4">System Settings</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The System Settings component should be integrated here.
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'facilities' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Facilities Management</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The Facilities component from the facilities branch should be integrated here.
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'bookings' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Bookings System</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The Bookings component from the bookings branch should be integrated here.
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'tickets' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Support Tickets</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The Tickets component from the tickets branch should be integrated here.
+              </p>
+            </div>
+          )}
+
+          {/* New Staff Role Routing Placeholders */}
+          {activeTab === 'my-bookings' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">My Bookings (Lecturer/Instructor)</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Lecturer Bookings.</p>
+            </div>
+          )}
+
+          {activeTab === 'facility-schedule' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Facility Schedule</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Lecturer Facility Viewer.</p>
+            </div>
+          )}
+
+          {activeTab === 'asset-inventory' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Asset Inventory</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Facility Manager Asset tools.</p>
+            </div>
+          )}
+
+          {activeTab === 'maintenance' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Maintenance Requests</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Facility Manager Maintenance.</p>
+            </div>
+          )}
+
+          {activeTab === 'department-schedules' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Department Schedules</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Coordinator Schedules.</p>
+            </div>
+          )}
+
+          {activeTab === 'approvals' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Pending Approvals</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Coordinator Approvals.</p>
+            </div>
+          )}
+
+          {activeTab === 'helpdesk-tickets' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Helpdesk Center</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Student Support Helpdesk.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
