@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../features/auth/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Shield, Users } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import UserManagement from '../features/auth/components/admin/UserManagement';
 import {
-  BookingsDashboard
+  BookingsDashboard,
+  CreateBooking,
+  MyBookings,
+  BookingDetails
 } from '../features/bookings';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -26,6 +30,16 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    if (location.pathname.startsWith('/dashboard/bookings')) {
+      setActiveTab('bookings');
+      return;
+    }
+    if (location.pathname === '/dashboard') {
+      setActiveTab(isAdmin ? 'users' : 'dashboard');
+    }
+  }, [location.pathname, isAdmin]);
+
   const getFirstName = () => {
     if (!user?.name) return 'User';
     return user.name.split(' ')[0];
@@ -38,6 +52,25 @@ export default function Dashboard() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const renderBookingContent = () => {
+    const pathSegment = location.pathname.split('/').pop();
+    const isBookingRoute = location.pathname.startsWith('/dashboard/bookings');
+    
+    if (!isBookingRoute) return null;
+
+    if (pathSegment === 'create') {
+      return <CreateBooking />;
+    }
+    if (pathSegment === 'my') {
+      return <MyBookings />;
+    }
+    if (/^\d+$/.test(pathSegment)) {
+      return <BookingDetails />;
+    }
+    
+    return <BookingsDashboard />;
   };
 
   return (
@@ -109,7 +142,7 @@ export default function Dashboard() {
 
           {activeTab === 'bookings' && (
             <div className="w-full">
-              <BookingsDashboard />
+              {renderBookingContent()}
             </div>
           )}
         </div>

@@ -65,7 +65,7 @@ const BookingCard = ({ booking }) => {
       )}
 
       <div className="flex flex-col sm:flex-row gap-2">
-        <Link to={`/bookings/${booking.id}`} className="sm:flex-1">
+        <Link to={`/dashboard/bookings/${booking.id}`} className="sm:flex-1">
           <button className="w-full bg-[#003049] text-white py-2.5 px-4 rounded-lg hover:bg-[#022338] text-sm font-semibold transition">
             View Details
           </button>
