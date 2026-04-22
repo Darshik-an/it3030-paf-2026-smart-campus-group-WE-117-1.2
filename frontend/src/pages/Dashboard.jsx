@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Users } from 'lucide-react';
+import { Shield, Users, UserPlus } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import UserManagement from '../features/auth/components/admin/UserManagement';
+import ManageStaff from '../features/auth/components/admin/ManageStaff';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -13,7 +14,7 @@ export default function Dashboard() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(isAdmin ? 'users' : 'dashboard');
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : 'dashboard');
   
   useEffect(() => {
     const handleResize = () => {
@@ -81,16 +82,28 @@ export default function Dashboard() {
                     <Shield className="w-6 h-6 text-[#D62828]" />
                     <h3 className="text-xl font-black text-[#003049]">Admin Panel</h3>
                   </div>
-                  <p className="text-gray-500 mb-4">Manage user accounts, assign roles, and configure system settings.</p>
-                  <button 
-                    onClick={() => setActiveTab('users')}
-                    className="bg-[#D62828] text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center gap-2"
-                  >
-                    <Users className="w-5 h-5" /> Manage Users
-                  </button>
+                  <p className="text-gray-500 mb-4">Provision staff accounts, manage user roles, and oversee system access.</p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => setActiveTab('staff')}
+                      className="bg-[#D62828] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#b01e1e] transition-all flex items-center gap-2"
+                    >
+                      <UserPlus className="w-5 h-5" /> Manage Staff
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('users')}
+                      className="bg-white text-[#003049] border-2 border-[#003049] px-6 py-3 rounded-xl font-bold hover:bg-[#003049] hover:text-white transition-all flex items-center gap-2"
+                    >
+                      <Users className="w-5 h-5" /> All Users
+                    </button>
+                  </div>
                 </div>
               )}
             </>
+          )}
+
+          {activeTab === 'staff' && isAdmin && (
+            <ManageStaff />
           )}
 
           {activeTab === 'users' && isAdmin && (

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import {
   Building, Calendar, Wrench, Users, Shield, LogOut,
-  LayoutDashboard, X
+  LayoutDashboard, X, UserPlus
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -112,7 +112,14 @@ export default function Sidebar({
           <div className="px-6 mt-4">
             <p className="text-[10px] font-bold text-[#D62828] uppercase tracking-widest mb-3">Admin Controls</p>
             <nav className="space-y-2">
-              <button 
+              <button
+                onClick={() => handleNavigation('/dashboard', 'staff')}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'staff') ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/20' : 'text-white/60 hover:text-[#D62828] hover:bg-white/5'}`}
+              >
+                <UserPlus className="w-5 h-5" />
+                <span>Manage Staff</span>
+              </button>
+              <button
                 onClick={() => handleNavigation('/dashboard', 'users')}
                 className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'users') ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/20' : 'text-white/60 hover:text-[#D62828] hover:bg-white/5'}`}
               >
