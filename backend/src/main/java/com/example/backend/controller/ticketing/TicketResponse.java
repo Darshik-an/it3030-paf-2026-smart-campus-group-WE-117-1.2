@@ -16,6 +16,10 @@ public class TicketResponse {
     private String priority;
     private String description;
     private String status;
+    private String assignedTechnician;
+    private String rejectionReason;
+    private String reporterName;
+    private String reporterEmail;
     private List<String> images;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -28,6 +32,10 @@ public class TicketResponse {
                 .priority(ticket.getPriority().name())
                 .description(ticket.getDescription())
                 .status(ticket.getStatus().name())
+                .assignedTechnician(ticket.getAssignedTechnician())
+                .rejectionReason(ticket.getRejectionReason())
+                .reporterName(ticket.getUser() != null ? ticket.getUser().getName() : null)
+                .reporterEmail(ticket.getUser() != null ? ticket.getUser().getEmail() : null)
                 .images(ticket.getImages())
                 .createdAt(ticket.getCreatedAt())
                 .updatedAt(ticket.getUpdatedAt())

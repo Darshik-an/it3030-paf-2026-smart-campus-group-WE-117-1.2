@@ -30,6 +30,10 @@ public class TicketService {
         return ticketRepository.findByIdAndUser(ticketId, user);
     }
 
+    public List<Ticket> getAllTicketsForManagement() {
+        return ticketRepository.findAllByOrderByCreatedAtDesc();
+    }
+
     public Ticket createTicket(User user, String resource, String category, String priority, String description) {
         return createTicket(user, resource, category, priority, description, List.of());
     }
@@ -62,6 +66,41 @@ public class TicketService {
         if (storedImages.size() > 0) ticket.setImage1(storedImages.get(0));
         if (storedImages.size() > 1) ticket.setImage2(storedImages.get(1));
         if (storedImages.size() > 2) ticket.setImage3(storedImages.get(2));
+
+        return ticketRepository.save(ticket);
+    }
+
+    public Ticket updateTicketByManagement(
+            Long ticketId,
+            String status,
+            String assignedTechnician,
+            String rejectionReason
+    ) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        if (status != null && !status.isBlank()) {
+            String normalizedStatus = normalize(status);
+            try {
+                Ticket.TicketStatus parsed = Ticket.TicketStatus.valueOf(normalizedStatus);
+                ticket.setStatus(parsed);
+            } catch (Exception ex) {
+                throw new IllegalArgumentException("Invalid status. Use IN_PROGRESS, RESOLVED, CLOSED, or REJECTED");
+            }
+        }
+
+        if (assignedTechnician != null) {
+            ticket.setAssignedTechnician(assignedTechnician.trim().isEmpty() ? null : assignedTechnician.trim());
+        }
+
+        if (ticket.getStatus() == Ticket.TicketStatus.REJECTED) {
+            if (isBlank(rejectionReason)) {
+                throw new IllegalArgumentException("Rejection reason is required when status is REJECTED");
+            }
+            ticket.setRejectionReason(rejectionReason.trim());
+        } else if (rejectionReason != null) {
+            ticket.setRejectionReason(rejectionReason.trim().isEmpty() ? null : rejectionReason.trim());
+        }
 
         return ticketRepository.save(ticket);
     }

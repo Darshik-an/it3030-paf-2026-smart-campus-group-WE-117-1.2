@@ -30,6 +30,10 @@ public class TicketController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    private boolean canManageTickets(User user) {
+        return user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.STUDENT_SUPPORT;
+    }
+
     @GetMapping
     public ResponseEntity<?> getMyTickets() {
         try {
@@ -53,6 +57,48 @@ public class TicketController {
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/manage")
+    public ResponseEntity<?> getAllTicketsForManagement() {
+        try {
+            User user = getCurrentUser();
+            if (!canManageTickets(user)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            List<TicketResponse> response = ticketService.getAllTicketsForManagement()
+                    .stream()
+                    .map(TicketResponse::from)
+                    .toList();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/manage/{id}")
+    public ResponseEntity<?> updateTicketForManagement(
+            @PathVariable Long id,
+            @RequestBody UpdateTicketAdminRequest request
+    ) {
+        try {
+            User user = getCurrentUser();
+            if (!canManageTickets(user)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            Ticket updated = ticketService.updateTicketByManagement(
+                    id,
+                    request.getStatus(),
+                    request.getAssignedTechnician(),
+                    request.getRejectionReason()
+            );
+            return ResponseEntity.ok(TicketResponse.from(updated));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 
