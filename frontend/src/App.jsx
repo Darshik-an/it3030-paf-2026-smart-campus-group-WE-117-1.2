@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import TicketingDashboard from './pages/Ticketting/ticketingdashboardpage';
+import TicketDetailsPage from './pages/Ticketting/TicketDetailsPage';
 import {
   BookingsDashboard,
   CreateBooking,
@@ -50,6 +51,11 @@ function App() {
             <Route path="/tickets" element={
               <ProtectedRoute>
                 <TicketingDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/tickets/:id" element={
+              <ProtectedRoute>
+                <TicketDetailsPage />
               </ProtectedRoute>
             } />
 

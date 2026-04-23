@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,6 +24,10 @@ public class TicketService {
 
     public List<Ticket> getUserTickets(User user) {
         return ticketRepository.findByUserOrderByCreatedAtDesc(user);
+    }
+
+    public Optional<Ticket> getUserTicketById(User user, Long ticketId) {
+        return ticketRepository.findByIdAndUser(ticketId, user);
     }
 
     public Ticket createTicket(User user, String resource, String category, String priority, String description) {

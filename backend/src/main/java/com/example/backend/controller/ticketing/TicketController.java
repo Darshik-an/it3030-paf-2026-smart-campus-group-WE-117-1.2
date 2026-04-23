@@ -44,6 +44,18 @@ public class TicketController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getTicketById(@PathVariable Long id) {
+        try {
+            User user = getCurrentUser();
+            return ticketService.getUserTicketById(user, id)
+                    .<ResponseEntity<?>>map(ticket -> ResponseEntity.ok(TicketResponse.from(ticket)))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createTicket(@RequestBody CreateTicketRequest request) {
         try {
