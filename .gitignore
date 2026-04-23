@@ -1,1 +1,7 @@
 backend/src/main/resources/application.properties
+
+# Environment files (local DB credentials)
+.env
+*.env
+**/.env
+
