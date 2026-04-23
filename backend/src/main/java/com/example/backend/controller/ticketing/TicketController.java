@@ -52,6 +52,12 @@ public class TicketController {
     public ResponseEntity<?> getTicketById(@PathVariable Long id) {
         try {
             User user = getCurrentUser();
+            if (canManageTickets(user)) {
+                return ticketService.getTicketById(id)
+                        .<ResponseEntity<?>>map(ticket -> ResponseEntity.ok(TicketResponse.from(ticket)))
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
+            }
+
             return ticketService.getUserTicketById(user, id)
                     .<ResponseEntity<?>>map(ticket -> ResponseEntity.ok(TicketResponse.from(ticket)))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
