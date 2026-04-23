@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { 
   Building, Calendar, Wrench, Users, Shield, LogOut, 
-  LayoutDashboard, X, UserPlus, FileText, ClipboardList, Briefcase, HeadphonesIcon 
+  LayoutDashboard, X, UserPlus, FileText, ClipboardList, Briefcase, HeadphonesIcon
 } from 'lucide-react';
 
 export default function Sidebar({ 

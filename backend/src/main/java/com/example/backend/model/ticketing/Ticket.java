@@ -44,6 +44,11 @@ public class Ticket {
     @Column(nullable = false)
     private TicketStatus status = TicketStatus.OPEN;
 
+    private String assignedTechnician;
+
+    @Column(columnDefinition = "TEXT")
+    private String rejectionReason;
+
     @Column(name = "image_1")
     private String image1;
 
@@ -76,7 +81,9 @@ public class Ticket {
     public enum TicketStatus {
         OPEN,
         IN_PROGRESS,
-        RESOLVED
+        RESOLVED,
+        CLOSED,
+        REJECTED
     }
 
     public List<String> getImages() {
