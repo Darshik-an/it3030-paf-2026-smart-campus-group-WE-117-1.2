@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, Users } from 'lucide-react';
+import { Shield, Users, UserPlus } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import UserManagement from '../features/auth/components/admin/UserManagement';
+import ManageStaff from '../features/auth/components/admin/ManageStaff';
 import {
   BookingsDashboard,
   CreateBooking,
@@ -20,7 +21,7 @@ export default function Dashboard() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(isAdmin ? 'users' : 'dashboard');
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : 'dashboard');
   
   useEffect(() => {
     const handleResize = () => {
@@ -36,7 +37,7 @@ export default function Dashboard() {
       return;
     }
     if (location.pathname === '/dashboard') {
-      setActiveTab(isAdmin ? 'users' : 'dashboard');
+      setActiveTab(isAdmin ? 'staff' : 'dashboard');
     }
   }, [location.pathname, isAdmin]);
 
@@ -117,32 +118,114 @@ export default function Dashboard() {
                     <Shield className="w-6 h-6 text-[#D62828]" />
                     <h3 className="text-xl font-black text-[#003049]">Admin Panel</h3>
                   </div>
-                  <p className="text-gray-500 mb-4">Manage user accounts, assign roles, and configure system settings.</p>
-                  <button 
-                    onClick={() => setActiveTab('users')}
-                    className="bg-[#D62828] text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center gap-2"
-                  >
-                    <Users className="w-5 h-5" /> Manage Users
-                  </button>
+                  <p className="text-gray-500 mb-4">Provision staff accounts, manage user roles, and oversee system access.</p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => setActiveTab('staff')}
+                      className="bg-[#D62828] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#b01e1e] transition-all flex items-center gap-2"
+                    >
+                      <UserPlus className="w-5 h-5" /> Manage Staff
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('users')}
+                      className="bg-white text-[#003049] border-2 border-[#003049] px-6 py-3 rounded-xl font-bold hover:bg-[#003049] hover:text-white transition-all flex items-center gap-2"
+                    >
+                      <Users className="w-5 h-5" /> All Users
+                    </button>
+                  </div>
                 </div>
               )}
             </>
+          )}
+
+          {activeTab === 'staff' && isAdmin && (
+            <ManageStaff />
           )}
 
           {activeTab === 'users' && isAdmin && (
             <UserManagement />
           )}
 
+          {activeTab === 'settings' && isAdmin && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828] flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#D62828] mb-4">System Settings</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The System Settings component should be integrated here.
+              </p>
+            </div>
+          )}
+
           {activeTab === 'facilities' && (
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Facilities Management</h2>
-              <p className="text-gray-600">Facilities management coming soon...</p>
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Facilities Management</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The Facilities component from the facilities branch should be integrated here.
+              </p>
             </div>
           )}
 
           {activeTab === 'bookings' && (
             <div className="w-full">
               {renderBookingContent()}
+            </div>
+          )}
+
+          {activeTab === 'tickets' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Support Tickets</h2>
+              <p className="text-gray-500 max-w-md">
+                Developer Note: The Tickets component from the tickets branch should be integrated here.
+              </p>
+            </div>
+          )}
+
+          {/* New Staff Role Routing Placeholders */}
+          {activeTab === 'my-bookings' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">My Bookings (Lecturer/Instructor)</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Lecturer Bookings.</p>
+            </div>
+          )}
+
+          {activeTab === 'facility-schedule' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Facility Schedule</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Lecturer Facility Viewer.</p>
+            </div>
+          )}
+
+          {activeTab === 'asset-inventory' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Asset Inventory</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Facility Manager Asset tools.</p>
+            </div>
+          )}
+
+          {activeTab === 'maintenance' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Maintenance Requests</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Facility Manager Maintenance.</p>
+            </div>
+          )}
+
+          {activeTab === 'department-schedules' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Department Schedules</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Coordinator Schedules.</p>
+            </div>
+          )}
+
+          {activeTab === 'approvals' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Pending Approvals</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Coordinator Approvals.</p>
+            </div>
+          )}
+
+          {activeTab === 'helpdesk-tickets' && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
+              <h2 className="text-2xl font-black text-[#003049] mb-4">Helpdesk Center</h2>
+              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Student Support Helpdesk.</p>
             </div>
           )}
         </div>

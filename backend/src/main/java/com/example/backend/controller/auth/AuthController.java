@@ -75,6 +75,39 @@ public class AuthController {
         return ResponseEntity.status(401).body("Unauthorized");
     }
 
+    @PatchMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UpdateProfileRequest request) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof User) {
+            User authenticatedUser = (User) principal;
+            User user = userRepository.findByEmail(authenticatedUser.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (request.getName() != null && !request.getName().isBlank()) {
+                user.setName(request.getName());
+            }
+            if (request.getPhone() != null && !request.getPhone().isBlank()) {
+                user.setPhoneNumber(request.getPhone());
+            }
+            if (request.getPassword() != null && !request.getPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+        }
+
+        return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+    }
+
+    @Data
+    static class UpdateProfileRequest {
+        private String name;
+        private String phone;
+        private String password;
+    }
+
     @Data
     static class RegisterRequest {
         private String name;

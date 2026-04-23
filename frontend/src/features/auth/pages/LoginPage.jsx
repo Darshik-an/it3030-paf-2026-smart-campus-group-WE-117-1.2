@@ -21,7 +21,19 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const response = await api.post('/api/auth/login', { email, password });
-      login(response.data.token);
+      const token = response.data.token;
+
+      const meResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const role = meResponse.data?.role;
+
+      if (role !== 'USER' && role !== undefined) {
+        setError('This portal is for students only. Staff must use the Staff Portal.');
+        return;
+      }
+
+      login(token);
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid user credentials');
     }

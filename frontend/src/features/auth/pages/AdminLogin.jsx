@@ -9,18 +9,35 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   if (user) return <Navigate to="/dashboard" />;
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
+    setError('');
+    setSubmitting(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
-      login(response.data.token);
+      const loginResponse = await api.post('/api/auth/login', { email, password });
+      const token = loginResponse.data.token;
+
+      const meResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const role = meResponse.data?.role;
+
+      if (role === 'USER' || !role) {
+        setError('This portal is for staff only. Students must use the Student Portal.');
+        setSubmitting(false);
+        return;
+      }
+
+      login(token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid admin credentials');
+      setError(err.response?.data?.message || 'Invalid staff credentials');
+      setSubmitting(false);
     }
   };
 
@@ -29,7 +46,7 @@ export default function AdminLogin() {
       {/* Background Blobs for Admin page (Darker, more serious tones) */}
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#D62828] opacity-20 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#003049] opacity-40 rounded-full blur-[100px] pointer-events-none"></div>
-      
+
       <div className="bg-white/95 backdrop-blur-xl w-full max-w-[440px] p-10 rounded-[2.5rem] shadow-2xl relative z-10 border border-white/20">
         <Link to="/" className="absolute top-6 left-6 text-gray-400 hover:text-[#D62828] transition-colors">
            <X className="w-6 h-6" />
@@ -48,38 +65,38 @@ export default function AdminLogin() {
         <form className="space-y-5" onSubmit={handleAdminLogin}>
           <div>
             <label className="block text-xs font-bold text-[#001f30] uppercase tracking-wider mb-2 ml-1">Staff Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@smartcampus.edu" 
+              placeholder="admin@smartcampus.edu"
               className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium"
               required
             />
           </div>
           <div>
             <label className="block text-xs font-bold text-[#001f30] uppercase tracking-wider mb-2 ml-1">Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
+            <input
+              type="password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium" 
-              required 
+              className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium"
+              required
             />
           </div>
-          
-          <button 
+
+          <button
             type="submit"
-            disabled={loading}
+            disabled={loading || submitting}
             className="w-full bg-[#D62828] text-white py-4 rounded-xl font-bold hover:bg-[#b01e1e] transition-all shadow-xl shadow-[#D62828]/20 disabled:opacity-70 active:scale-[0.98] mt-4"
           >
-            {loading ? 'Verifying...' : 'Log in'}
+            {submitting ? 'Verifying...' : 'Log in'}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-8 font-medium">
-          Students must use the 
+          Students must use the
           <Link to="/login" className="text-[#001f30] font-bold hover:underline ml-1">
             Student Portal
           </Link>
