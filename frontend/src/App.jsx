@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import TicketingDashboard from './pages/Ticketting/ticketingdashboardpage';
+import TicketDetailsPage from './pages/Ticketting/TicketDetailsPage';
 import {
   BookingsDashboard,
   CreateBooking,
@@ -52,6 +53,16 @@ function App() {
                 <TicketingDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/tickets/:id" element={
+              <ProtectedRoute>
+                <TicketDetailsPage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/bookings" element={<Navigate to="/dashboard/bookings" replace />} />
+            <Route path="/bookings/create" element={<Navigate to="/dashboard/bookings/create" replace />} />
+            <Route path="/my-bookings" element={<Navigate to="/dashboard/bookings/my" replace />} />
+            <Route path="/bookings/:id" element={<Navigate to="/dashboard/bookings" replace />} />
             <Route path="/" element={<LandingPage />} />
           </Routes>
         </BrowserRouter>
