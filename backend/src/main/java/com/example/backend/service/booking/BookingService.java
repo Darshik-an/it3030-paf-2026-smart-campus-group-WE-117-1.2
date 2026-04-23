@@ -1,18 +1,19 @@
 package com.example.backend.service.booking;
 
-import com.example.backend.model.auth.User;
-import com.example.backend.model.booking.Booking;
-import com.example.backend.model.booking.Resource;
-import com.example.backend.repository.booking.BookingRepository;
-import com.example.backend.repository.booking.ResourceRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.example.backend.model.Resource;
+import com.example.backend.model.auth.User;
+import com.example.backend.model.booking.Booking;
+import com.example.backend.repository.ResourceRepository;
+import com.example.backend.repository.booking.BookingRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

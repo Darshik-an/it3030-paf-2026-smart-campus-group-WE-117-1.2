@@ -1,15 +1,14 @@
 package com.example.backend.controller.booking;
 
-import com.example.backend.model.booking.Booking;
-import com.example.backend.model.booking.Resource;
-import com.example.backend.model.auth.User;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import com.example.backend.model.booking.Booking;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor

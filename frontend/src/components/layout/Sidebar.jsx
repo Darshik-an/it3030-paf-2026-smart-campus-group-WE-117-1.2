@@ -96,10 +96,16 @@ export default function Sidebar({
             {role === 'USER' || isAdmin ? (
               // Regular User and Admin Menu Items
               <>
-                {renderNavButton(Building, 'Facilities', 'facilities')}
+                <button
+                  onClick={() => handleNavigation('/dashboard/facilities', 'facilities')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard/facilities') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Building className="w-5 h-5" />
+                  <span>Facilities</span>
+                </button>
                 <button
                   onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'bookings') || location.pathname.startsWith('/dashboard/bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard/bookings') || location.pathname.startsWith('/dashboard/bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
                 >
                   <Calendar className="w-5 h-5" />
                   <span>Bookings</span>
