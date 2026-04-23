@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (user) return <Navigate to="/dashboard" />;
 
@@ -19,23 +20,27 @@ export default function LoginPage() {
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
     try {
       const response = await api.post('/api/auth/login', { email, password });
       const token = response.data.token;
 
-      const meResponse = await api.get('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
+      const meRes = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const role = meResponse.data?.role;
+      const role = meRes.data?.role;
 
-      if (role !== 'USER' && role !== undefined) {
+      if (role && role !== 'USER') {
         setError('This portal is for students only. Staff must use the Staff Portal.');
         return;
       }
 
       login(token);
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid user credentials');
+      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -96,10 +101,10 @@ export default function LoginPage() {
           
           <button 
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="w-full bg-[#003049] text-white py-4 rounded-xl font-bold hover:bg-[#002030] transition-all shadow-xl shadow-[#003049]/20 disabled:opacity-70 active:scale-[0.98]"
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {isSubmitting ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
 
@@ -121,6 +126,12 @@ export default function LoginPage() {
           Don't have an account? 
           <Link to="/signup" className="text-[#F77F00] font-bold hover:underline ml-1">
             Create one
+          </Link>
+        </p>
+        <p className="text-center text-sm text-gray-500 mt-2 font-medium">
+          Staff or Admin?{' '}
+          <Link to="/admin-login" className="text-[#003049] font-bold hover:underline">
+            Use Staff Portal
           </Link>
         </p>
       </div>

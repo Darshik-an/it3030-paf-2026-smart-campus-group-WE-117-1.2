@@ -13,7 +13,11 @@ import {
   BookingDetails
 } from '../features/bookings';
 import TicketAdminDashboard from './Ticketting/TicketAdminDashboard';
+<<<<<<< feature/himansa/Ticketing-admindashboard
 import TechniciansList from './Ticketting/TechniciansList';
+=======
+import Resources from './Resources';
+>>>>>>> dev
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -36,6 +40,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (location.pathname.startsWith('/dashboard/bookings')) {
       setActiveTab('bookings');
+      return;
+    }
+    if (location.pathname.startsWith('/dashboard/facilities')) {
+      setActiveTab('facilities');
       return;
     }
     if (location.pathname === '/dashboard') {
@@ -162,11 +170,8 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'facilities' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#003049] mb-4">Facilities Management</h2>
-              <p className="text-gray-500 max-w-md">
-                Developer Note: The Facilities component from the facilities branch should be integrated here.
-              </p>
+            <div className="w-full">
+              <Resources />
             </div>
           )}
 

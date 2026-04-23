@@ -33,6 +33,11 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/facilities" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard/bookings/*" element={
               <ProtectedRoute>
                 <Dashboard />
