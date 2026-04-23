@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TicketingFormPage from "./ticketingformpage";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
@@ -36,6 +37,7 @@ function formatRelativeTime(timestamp) {
 }
 
 export default function TicketingDashboard() {
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
@@ -169,7 +171,12 @@ export default function TicketingDashboard() {
                   tickets.map((t) => {
                     const status = statusStyles[t.status] || { label: t.status, dotColor: "bg-gray-500" };
                     return (
-                      <div key={t.id} className="bg-white rounded-xl p-4 flex items-center gap-3 border border-gray-200">
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => navigate(`/tickets/${t.id}`)}
+                        className="bg-white rounded-xl p-4 flex items-center gap-3 border border-gray-200 text-left hover:border-blue-300 transition"
+                      >
                         <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">🖥</div>
                         <div className="flex-1">
                           <span className="text-xs text-gray-400">#{t.id}</span>
@@ -195,7 +202,7 @@ export default function TicketingDashboard() {
                             {status.label}
                           </span>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
               </div>
