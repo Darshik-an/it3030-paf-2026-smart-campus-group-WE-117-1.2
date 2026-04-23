@@ -13,11 +13,8 @@ import {
   BookingDetails
 } from '../features/bookings';
 import TicketAdminDashboard from './Ticketting/TicketAdminDashboard';
-<<<<<<< feature/himansa/Ticketing-admindashboard
 import TechniciansList from './Ticketting/TechniciansList';
-=======
 import Resources from './Resources';
->>>>>>> dev
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
