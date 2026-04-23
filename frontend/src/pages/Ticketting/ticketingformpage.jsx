@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from "../../services/api";
 
 const categories = [
   { label: "Hardware", icon: "🖥" },
@@ -6,11 +7,63 @@ const categories = [
   { label: "Facility", icon: "🏢" },
 ];
 
-export default function TicketingFormPage({ onBack }) {
+export default function TicketingFormPage({ onBack, onTicketCreated }) {
   const [category, setCategory] = useState("Hardware");
   const [resource, setResource] = useState("");
   const [priority, setPriority] = useState("Low - Routine");
   const [description, setDescription] = useState("");
+  const [images, setImages] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 3) {
+      setError("You can upload maximum 3 images.");
+      setImages(files.slice(0, 3));
+      return;
+    }
+    setError("");
+    setImages(files);
+  };
+
+  const handleSubmit = async () => {
+    if (!resource.trim() || !description.trim()) {
+      setError("Affected resource and issue description are required.");
+      return;
+    }
+    if (images.length > 3) {
+      setError("You can upload maximum 3 images.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("resource", resource.trim());
+      formData.append("category", category);
+      formData.append("priority", priority);
+      formData.append("description", description.trim());
+      images.forEach((file) => formData.append("images", file));
+
+      const response = await api.post("/api/tickets", formData);
+
+      if (onTicketCreated) {
+        onTicketCreated(response.data);
+      }
+      onBack();
+    } catch (err) {
+      const raw = err.response?.data;
+      const message =
+        typeof raw === "string"
+          ? raw
+          : raw?.message || `Failed to create ticket (${err.response?.status || "unknown error"}).`;
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#eef2f7] font-sans px-4 pt-6 pb-12">
@@ -127,11 +180,29 @@ export default function TicketingFormPage({ onBack }) {
             <p className="text-xs text-gray-400 mb-4">
               JPEG, PNG, or GIF up to 10MB
             </p>
-            <button className="bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-semibold">
+            <label className="bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-semibold cursor-pointer inline-block">
               Browse Files
-            </button>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+            {images.length > 0 && (
+              <p className="text-xs text-gray-600 mt-3">
+                {images.length} image(s) selected
+              </p>
+            )}
           </div>
         </div>
+
+        {error && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-7">
@@ -148,8 +219,12 @@ export default function TicketingFormPage({ onBack }) {
             <button onClick={onBack} className="text-sm text-gray-700">
               Cancel
             </button>
-            <button className="bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-semibold">
-              Submit Ticket ➤
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-60"
+            >
+              {submitting ? "Submitting..." : "Submit Ticket ➤"}
             </button>
           </div>
         </div>
