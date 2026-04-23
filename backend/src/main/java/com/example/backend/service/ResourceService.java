@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,11 @@ public class ResourceService {
     }
 
     public List<Resource> searchResources(ResourceType type, Integer capacity, String location) {
-        return resourceRepository.findByTypeAndCapacityGreaterThanEqualAndLocationContainingIgnoreCase(type, capacity, location);
+        return resourceRepository.findAll().stream()
+                .filter(r -> type == null || r.getType() == type)
+                .filter(r -> capacity == null || (r.getCapacity() != null && r.getCapacity() >= capacity))
+                .filter(r -> location == null || location.isBlank() ||
+                        (r.getLocation() != null && r.getLocation().toLowerCase().contains(location.toLowerCase())))
+                .collect(Collectors.toList());
     }
 }

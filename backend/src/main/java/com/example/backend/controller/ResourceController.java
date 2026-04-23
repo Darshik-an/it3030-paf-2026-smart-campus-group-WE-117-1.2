@@ -60,9 +60,10 @@ public class ResourceController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/search")
     public ResponseEntity<List<Resource>> searchResources(
-            @RequestParam ResourceType type,
-            @RequestParam Integer capacity,
-            @RequestParam String location) {
-        return ResponseEntity.ok(resourceService.searchResources(type, capacity, location));
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Integer capacity,
+            @RequestParam(required = false) String location) {
+        ResourceType resourceType = (type != null && !type.isBlank()) ? ResourceType.valueOf(type) : null;
+        return ResponseEntity.ok(resourceService.searchResources(resourceType, capacity, location));
     }
 }
