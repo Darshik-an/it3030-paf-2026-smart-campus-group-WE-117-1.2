@@ -135,7 +135,7 @@ export default function Sidebar({
                 )}
                 {role === 'STUDENT_SUPPORT' && (
                   <>
-                    {renderNavButton(HeadphonesIcon, 'Helpdesk Tickets', 'helpdesk-tickets')}
+                    {renderNavButton(HeadphonesIcon, 'Technicians', 'helpdesk-tickets')}
                   </>
                 )}
               </>

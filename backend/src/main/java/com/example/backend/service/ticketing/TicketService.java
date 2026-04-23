@@ -30,6 +30,10 @@ public class TicketService {
         return ticketRepository.findByIdAndUser(ticketId, user);
     }
 
+    public Optional<Ticket> getTicketById(Long ticketId) {
+        return ticketRepository.findById(ticketId);
+    }
+
     public List<Ticket> getAllTicketsForManagement() {
         return ticketRepository.findAllByOrderByCreatedAtDesc();
     }
@@ -94,10 +98,7 @@ public class TicketService {
         }
 
         if (ticket.getStatus() == Ticket.TicketStatus.REJECTED) {
-            if (isBlank(rejectionReason)) {
-                throw new IllegalArgumentException("Rejection reason is required when status is REJECTED");
-            }
-            ticket.setRejectionReason(rejectionReason.trim());
+            ticket.setRejectionReason(isBlank(rejectionReason) ? null : rejectionReason.trim());
         } else if (rejectionReason != null) {
             ticket.setRejectionReason(rejectionReason.trim().isEmpty() ? null : rejectionReason.trim());
         }

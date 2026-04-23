@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 export default function TicketDashboard() {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -140,15 +142,33 @@ export default function TicketDashboard() {
           {!loading && !error && tickets.map((t) => (
             <div
               key={t.id}
-              className="grid grid-cols-6 items-center px-5 py-4 border-b hover:bg-gray-50"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/tickets/${t.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") navigate(`/tickets/${t.id}`);
+              }}
+              className="grid grid-cols-6 items-center px-5 py-4 border-b hover:bg-gray-50 cursor-pointer"
             >
 
               {/* ID */}
-              <div className="font-semibold">#{t.id}</div>
+              <button
+                type="button"
+                onClick={() => navigate(`/tickets/${t.id}`)}
+                className="font-semibold text-left text-blue-700 hover:underline"
+              >
+                #{t.id}
+              </button>
 
               {/* Issue */}
               <div>
-                <p className="font-semibold text-sm">{t.resource}</p>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/tickets/${t.id}`)}
+                  className="font-semibold text-sm text-left hover:underline"
+                >
+                  {t.resource}
+                </button>
                 <p className="text-xs text-gray-500">{t.description}</p>
               </div>
 
@@ -174,6 +194,7 @@ export default function TicketDashboard() {
                 <select
                   className="block border rounded px-2 py-1 text-xs"
                   value={t.status}
+                  onClick={(e) => e.stopPropagation()}
                   onChange={(e) => updateTicket(t.id, { status: e.target.value })}
                   disabled={savingId === t.id}
                 >
@@ -191,16 +212,15 @@ export default function TicketDashboard() {
                   className="w-full border rounded px-2 py-1 text-xs"
                   placeholder="Assigned technician"
                   defaultValue={t.assignedTechnician || ""}
+                  onClick={(e) => e.stopPropagation()}
                   onBlur={(e) => updateTicket(t.id, { assignedTechnician: e.target.value })}
                   disabled={savingId === t.id}
                 />
                 <button
                   className="text-xs px-2 py-1 rounded bg-red-100 text-red-700"
-                  onClick={() => {
-                    const reason = window.prompt("Rejection reason:");
-                    if (reason && reason.trim()) {
-                      updateTicket(t.id, { status: "REJECTED", rejectionReason: reason.trim() });
-                    }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateTicket(t.id, { status: "REJECTED" });
                   }}
                   disabled={savingId === t.id}
                 >

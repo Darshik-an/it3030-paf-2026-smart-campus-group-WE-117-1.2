@@ -13,6 +13,7 @@ import {
   BookingDetails
 } from '../features/bookings';
 import TicketAdminDashboard from './Ticketting/TicketAdminDashboard';
+import TechniciansList from './Ticketting/TechniciansList';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -228,10 +229,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'helpdesk-tickets' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#003049] mb-4">Helpdesk Center</h2>
-              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Student Support Helpdesk.</p>
-            </div>
+            <TechniciansList />
           )}
         </div>
       </main>
