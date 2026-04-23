@@ -43,14 +43,18 @@ public class DataInitializer {
             return;
         }
 
-        User user = new User();
-        user.setEmail(email);
-        user.setName(name);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(role);
-        user.setLastLoggedIn(LocalDateTime.now());
-        userRepository.save(user);
+        try {
+            User user = new User();
+            user.setEmail(email);
+            user.setName(name);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setRole(role);
+            user.setLastLoggedIn(LocalDateTime.now());
+            userRepository.save(user);
 
-        log.info("{} user seeded: {} / {}", role.name(), email, password);
+            log.info("{} user seeded: {} / {}", role.name(), email, password);
+        } catch (Exception ex) {
+            log.warn("Skipping seed for {} because DB rejected role '{}': {}", email, role.name(), ex.getMessage());
+        }
     }
 }
