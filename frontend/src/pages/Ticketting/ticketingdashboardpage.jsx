@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TicketingFormPage from "./ticketingformpage";
 import Sidebar from "../../components/layout/Sidebar";
@@ -76,6 +76,16 @@ export default function TicketingDashboard() {
     setTickets((prev) => [newTicket, ...prev]);
   };
 
+  const statusCounts = useMemo(() => {
+    const counts = { OPEN: 0, IN_PROGRESS: 0, RESOLVED: 0 };
+    (tickets || []).forEach((t) => {
+      if (!t?.status) return;
+      const key = String(t.status).toUpperCase();
+      if (key in counts) counts[key] += 1;
+    });
+    return counts;
+  }, [tickets]);
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-sans">
       <Sidebar
@@ -121,22 +131,22 @@ export default function TicketingDashboard() {
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-[#FCBF49] rounded-xl p-4 border border-gray-200">
                   <div className="w-8 h-8 bg-[#F77F00] text-blue-700 rounded-lg flex items-center justify-center mb-3">🎫</div>
-                  <span className="text-[10px] font-semibold bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">URGENT</span>
-                  <p className="text-sm text-gray-600 mt-2">Active Tickets</p>
-                  <p className="text-3xl font-bold">{tickets.length}</p>
-                  <p className="text-xs text-gray-700">Live from your submissions</p>
+                  <span className="text-[10px] font-semibold bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">OPEN</span>
+                  <p className="text-sm text-gray-600 mt-2">Open Tickets</p>
+                  <p className="text-3xl font-bold">{statusCounts.OPEN}</p>
+                  <p className="text-xs text-gray-700">Waiting for action</p>
                 </div>
                 <div className="bg-[#F77F00] rounded-xl p-4 border border-gray-200">
                   <div className="w-8 h-8 bg-[#FCBF49] text-yellow-700 rounded-lg flex items-center justify-center mb-3">⏳</div>
-                  <p className="text-sm text-gray-600">Pending Review</p>
-                  <p className="text-3xl font-bold">12</p>
-                  <p className="text-xs text-yellow-700">⚠ Requires immediate triage</p>
+                  <p className="text-sm text-gray-600">In Progress</p>
+                  <p className="text-3xl font-bold">{statusCounts.IN_PROGRESS}</p>
+                  <p className="text-xs text-yellow-700">Being worked on</p>
                 </div>
                 <div className="bg-[#D62828] rounded-xl p-4 border border-gray-200">
                   <div className="w-8 h-8 bg-[#003049] text-green-700 rounded-lg flex items-center justify-center mb-3">✅</div>
-                  <p className="text-sm text-gray-600">Resolved this Week</p>
-                  <p className="text-3xl font-bold">148</p>
-                  <p className="text-xs text-green-700">✓ 98% SLA compliance</p>
+                  <p className="text-sm text-gray-600">Resolved</p>
+                  <p className="text-3xl font-bold">{statusCounts.RESOLVED}</p>
+                  <p className="text-xs text-green-700">Completed tickets</p>
                 </div>
               </div>
 
