@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,10 +28,31 @@ public class HelpdeskTechnicianService {
     private final HelpdeskTechnicianRepository technicianRepository;
     private final TicketRepository ticketRepository;
 
+    @Transactional
+    public void syncActiveTicketsFromTickets() {
+        List<Ticket> allTickets = ticketRepository.findAllByOrderByCreatedAtDesc();
+        List<HelpdeskTechnician> technicians = technicianRepository.findAll();
+
+        boolean changed = false;
+        for (HelpdeskTechnician technician : technicians) {
+            List<String> latestRefs = activeTicketRefs(technician, allTickets);
+            List<String> currentRefs = technician.getActiveTicketRefs();
+            if (!currentRefs.equals(latestRefs)) {
+                technician.setActiveTicketRefs(latestRefs);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            technicianRepository.saveAll(technicians);
+        }
+    }
+
     public List<HelpdeskTechnicianResponse> findAllForRoster() {
+        syncActiveTicketsFromTickets();
         return technicianRepository.findAll().stream()
                 .sorted(Comparator.comparing(HelpdeskTechnician::getId))
-                .map(t -> HelpdeskTechnicianResponse.from(t, activeTicketRefs(t)))
+                .map(t -> HelpdeskTechnicianResponse.from(t, t.getActiveTicketRefs()))
                 .toList();
     }
 
@@ -49,8 +71,9 @@ public class HelpdeskTechnicianService {
         String spec = request.getSpecialization() != null ? request.getSpecialization().trim() : "";
         entity.setSpecialization(spec.isEmpty() ? "General" : spec);
 
+        entity.setActiveTicketRefs(List.of());
         HelpdeskTechnician saved = technicianRepository.save(entity);
-        return HelpdeskTechnicianResponse.from(saved, activeTicketRefs(saved));
+        return HelpdeskTechnicianResponse.from(saved, saved.getActiveTicketRefs());
     }
 
     @Transactional
@@ -72,7 +95,7 @@ public class HelpdeskTechnicianService {
         entity.setSpecialization(spec.isEmpty() ? "General" : spec);
 
         HelpdeskTechnician saved = technicianRepository.save(entity);
-        return HelpdeskTechnicianResponse.from(saved, activeTicketRefs(saved));
+        return HelpdeskTechnicianResponse.from(saved, saved.getActiveTicketRefs());
     }
 
     @Transactional
@@ -83,11 +106,11 @@ public class HelpdeskTechnicianService {
         technicianRepository.deleteById(id);
     }
 
-    private List<String> activeTicketRefs(HelpdeskTechnician technician) {
+    private List<String> activeTicketRefs(HelpdeskTechnician technician, List<Ticket> allTickets) {
         String nameKey = technician.getName().trim().toLowerCase(Locale.ROOT);
         String emailKey = technician.getEmail().trim().toLowerCase(Locale.ROOT);
 
-        return ticketRepository.findAllByOrderByCreatedAtDesc().stream()
+        return allTickets.stream()
                 .filter(t -> t.getAssignedTechnician() != null && !t.getAssignedTechnician().isBlank())
                 .filter(t -> ACTIVE_STATUSES.contains(t.getStatus()))
                 .filter(t -> {
@@ -96,6 +119,6 @@ public class HelpdeskTechnicianService {
                 })
                 .sorted(Comparator.comparing(Ticket::getId).reversed())
                 .map(t -> "#" + t.getId())
-                .toList();
+                .collect(Collectors.toList());
     }
 }

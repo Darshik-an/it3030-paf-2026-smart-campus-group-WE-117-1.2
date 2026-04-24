@@ -6,6 +6,7 @@ export default function TicketDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
+  const [assignedTech, setAssignedTech] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,6 +27,32 @@ export default function TicketDetailsPage() {
 
     fetchTicket();
   }, [id]);
+
+  useEffect(() => {
+    const fetchAssignedTechnician = async () => {
+      if (!ticket?.assignedTechnician) {
+        setAssignedTech(null);
+        return;
+      }
+
+      try {
+        const response = await api.get("/api/helpdesk/technicians");
+        const technicians = Array.isArray(response.data) ? response.data : [];
+        const assignedKey = ticket.assignedTechnician.trim().toLowerCase();
+        const matched = technicians.find((tech) => {
+          const nameKey = (tech.name || "").trim().toLowerCase();
+          const emailKey = (tech.email || "").trim().toLowerCase();
+          const techIdKey = (tech.techId || "").trim().toLowerCase();
+          return assignedKey === nameKey || assignedKey === emailKey || assignedKey === techIdKey;
+        });
+        setAssignedTech(matched || null);
+      } catch (e) {
+        setAssignedTech(null);
+      }
+    };
+
+    fetchAssignedTechnician();
+  }, [ticket]);
 
   const relativeCreated = (timestamp) => {
     if (!timestamp) return "just now";
@@ -57,6 +84,15 @@ export default function TicketDetailsPage() {
   }
 
   const statusLabel = ticket.status?.replace("_", " ") || "OPEN";
+  const technicianName = assignedTech?.name || ticket.assignedTechnician || "Not assigned yet";
+  const technicianRole = assignedTech?.specialization
+    || (ticket.assignedTechnician ? `${ticket.category} Specialist` : "Waiting for technician assignment");
+  const technicianInitials = technicianName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join("") || "NA";
 
   return (
     <div className="min-h-screen bg-[#eef2f7] p-6 font-sans">
@@ -150,6 +186,7 @@ export default function TicketDetailsPage() {
                     src={`http://localhost:8080/uploads/tickets/${img}`}
                     alt="evidence"
                     className="w-16 h-16 rounded object-cover border border-gray-200"
+                    className="w-40 h-40 rounded object-cover border border-gray-200"
                   />
                 ))
               ) : (
@@ -167,19 +204,14 @@ export default function TicketDetailsPage() {
           <div className="bg-[#5a2500] text-white p-5 rounded-xl">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-orange-300 text-black px-3 py-1 rounded-lg font-bold">
-                TM
+                {technicianInitials}
               </div>
               <div>
-                <p className="font-semibold">Technician Log: Marcus Thorne</p>
+                <p className="font-semibold">Technician Log: {technicianName}</p>
                 <p className="text-xs text-orange-200">
-                  Senior AV Specialist
+                  {technicianRole}
                 </p>
               </div>
-            </div>
-
-            <div className="bg-[#6b2e00] p-4 rounded-lg text-sm">
-              Initial inspection confirms fan blockage. Cleaning protocol
-              initiated. Estimated resolution time: 45 mins.
             </div>
           </div>
 
