@@ -28,7 +28,12 @@ api.interceptors.response.use(
       
       if (!isLoginRequest && !isAuthPage) {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        const lastRole = localStorage.getItem('lastRole');
+        if (lastRole && lastRole !== 'USER') {
+          window.location.href = '/admin-login';
+        } else {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
