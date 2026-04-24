@@ -61,7 +61,9 @@ export default function Sidebar({
     <>
       {/* Overlay for Sidebar */}
       <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${
+          isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        } ${isMobileMenuOpen ? '' : 'pointer-events-none'}`}
         onClick={() => {
           setIsMobileMenuOpen(false);
           if (setIsDesktopMenuOpen) setIsDesktopMenuOpen(false);

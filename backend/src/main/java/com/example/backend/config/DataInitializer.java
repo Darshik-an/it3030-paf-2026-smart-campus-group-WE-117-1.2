@@ -1,7 +1,9 @@
 package com.example.backend.config;
 
 import com.example.backend.model.auth.User;
+import com.example.backend.model.ticketing.HelpdeskTechnician;
 import com.example.backend.repository.auth.UserRepository;
+import com.example.backend.repository.ticketing.HelpdeskTechnicianRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -21,6 +23,7 @@ public class DataInitializer {
     private static final String ADMIN_NAME = "System Administrator";
 
     private final UserRepository userRepository;
+    private final HelpdeskTechnicianRepository helpdeskTechnicianRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Bean
@@ -34,7 +37,40 @@ public class DataInitializer {
             seedUserIfNotExists("coordinator@smartcampus.edu", "Coordinator User", "Coordinator@123", User.Role.COORDINATOR);
             seedUserIfNotExists("support@smartcampus.edu", "Student Support", "Support@123", User.Role.STUDENT_SUPPORT);
             seedUserIfNotExists("technician@smartcampus.edu", "Technician User", "Technician@123", User.Role.TECHNICIAN);
+            seedHelpdeskTechniciansIfEmpty();
         };
+    }
+
+    private void seedHelpdeskTechniciansIfEmpty() {
+        if (helpdeskTechnicianRepository.count() > 0) {
+            return;
+        }
+        try {
+            helpdeskTechnicianRepository.save(helpdeskTech(
+                    "Marcus Thorne", "marcus@campus.com", "+94 77 123 4567",
+                    "Hardware", "Projectors & AV Systems"));
+            helpdeskTechnicianRepository.save(helpdeskTech(
+                    "Sarah Jenkins", "sarah@campus.com", "+94 71 555 7788",
+                    "Software", "Network & Systems"));
+            helpdeskTechnicianRepository.save(helpdeskTech(
+                    "Brian Taylor", "brian@campus.com", "+94 75 888 2222",
+                    "Facility", "HVAC & Plumbing"));
+            log.info("Seeded sample helpdesk technicians");
+        } catch (Exception ex) {
+            log.warn("Skipping helpdesk technician seed: {}", ex.getMessage());
+        }
+    }
+
+    private static HelpdeskTechnician helpdeskTech(
+            String name, String email, String phone, String category, String specialization
+    ) {
+        HelpdeskTechnician t = new HelpdeskTechnician();
+        t.setName(name);
+        t.setEmail(email);
+        t.setPhone(phone);
+        t.setCategory(category);
+        t.setSpecialization(specialization);
+        return t;
     }
 
     private void seedUserIfNotExists(String email, String name, String password, User.Role role) {

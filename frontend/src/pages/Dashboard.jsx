@@ -13,6 +13,7 @@ import {
   BookingDetails
 } from '../features/bookings';
 import TicketAdminDashboard from './Ticketting/TicketAdminDashboard';
+import TicketingTechnicionDashboard from './Ticketting/TicketingTechnicionDashboard';
 import TechniciansList from './Ticketting/TechniciansList';
 import Resources from './Resources';
 
@@ -21,6 +22,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
+  const isStudentSupport = user?.role === 'STUDENT_SUPPORT';
+  const isTechnician = user?.role === 'TECHNICIAN';
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
@@ -100,7 +103,7 @@ export default function Dashboard() {
 
         {/* Dashboard Body */}
         <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-8">
-          {activeTab === 'dashboard' && user?.role !== 'STUDENT_SUPPORT' && (
+          {activeTab === 'dashboard' && !isStudentSupport && !isTechnician && (
             <>
               {/* Welcome Banner */}
               <section className="bg-[#003049] rounded-2xl md:rounded-[2.5rem] p-6 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-[#003049]/10">
@@ -145,8 +148,12 @@ export default function Dashboard() {
             </>
           )}
 
-          {activeTab === 'dashboard' && user?.role === 'STUDENT_SUPPORT' && (
+          {activeTab === 'dashboard' && isStudentSupport && (
             <TicketAdminDashboard />
+          )}
+
+          {activeTab === 'dashboard' && isTechnician && (
+            <TicketingTechnicionDashboard />
           )}
 
           {activeTab === 'staff' && isAdmin && (
