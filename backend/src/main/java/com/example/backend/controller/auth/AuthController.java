@@ -24,6 +24,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final com.example.backend.service.FileStorageService fileStorageService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -99,6 +100,43 @@ public class AuthController {
         }
 
         return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+    }
+
+    @PostMapping("/profile/picture")
+    public ResponseEntity<?> uploadProfilePicture(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof User)) return ResponseEntity.status(401).body("Unauthorized");
+
+        User authenticatedUser = (User) principal;
+        User user = userRepository.findByEmail(authenticatedUser.getEmail()).orElseThrow();
+
+        // Delete old picture if exists
+        if (user.getProfilePicture() != null) {
+            fileStorageService.deleteFile(user.getProfilePicture());
+        }
+
+        String fileName = fileStorageService.saveAvatar(file);
+        user.setProfilePicture(fileName);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(user);
+    }
+
+    @DeleteMapping("/profile/picture")
+    public ResponseEntity<?> deleteProfilePicture() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof User)) return ResponseEntity.status(401).body("Unauthorized");
+
+        User authenticatedUser = (User) principal;
+        User user = userRepository.findByEmail(authenticatedUser.getEmail()).orElseThrow();
+
+        if (user.getProfilePicture() != null) {
+            fileStorageService.deleteFile(user.getProfilePicture());
+            user.setProfilePicture(null);
+            userRepository.save(user);
+        }
+
+        return ResponseEntity.ok(user);
     }
 
     @Data

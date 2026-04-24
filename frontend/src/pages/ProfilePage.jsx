@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { useAuth } from '../features/auth/context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
-import { Mail, Calendar, Shield, Clock, UserCircle, Key, Edit2, Trash2 } from 'lucide-react';
+import { Mail, Calendar, Shield, Clock, UserCircle, Key, Edit2, Trash2, X, Maximize2 } from 'lucide-react';
+import AvatarUploader from '../features/auth/components/AvatarUploader';
+import api from '../services/api';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
+  const [showUploader, setShowUploader] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const getInitial = () => {
     return user?.name?.charAt(0).toUpperCase() || 'U';
@@ -31,6 +36,21 @@ export default function ProfilePage() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleDeletePicture = async () => {
+    if (!user?.profilePicture) return;
+    if (!window.confirm('Delete your profile picture?')) return;
+    
+    try {
+      setIsDeleting(true);
+      const response = await api.delete('/api/auth/profile/picture');
+      setUser(response.data);
+    } catch (err) {
+      alert('Failed to delete picture');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -69,16 +89,37 @@ export default function ProfilePage() {
 
               {/* Avatar */}
               <div className="relative group/avatar">
-                <div className="relative z-10 w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white shadow-xl shadow-gray-200 flex items-center justify-center overflow-hidden bg-[#003049]/5 flex-shrink-0">
+                <div className="relative z-10 w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white shadow-xl shadow-gray-200 flex items-center justify-center overflow-hidden bg-[#003049]/5 flex-shrink-0 cursor-pointer group/avatar-main" onClick={() => user?.profilePicture && setShowLightbox(true)}>
                   {user?.profilePicture ? (
-                    <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    <div className="relative w-full h-full">
+                      <img src={`http://localhost:8080${user.profilePicture}`} alt="Profile" className="w-full h-full object-cover group-hover/avatar-main:scale-110 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/avatar-main:opacity-100 transition-opacity flex items-center justify-center">
+                         <Maximize2 className="w-8 h-8 text-white drop-shadow-lg" />
+                      </div>
+                    </div>
                   ) : (
                     <span className="text-5xl font-black text-[#003049]">{getInitial()}</span>
                   )}
                 </div>
-                <button className="absolute -top-2 -right-2 z-20 bg-white p-2 rounded-2xl shadow-xl text-gray-400 hover:text-[#F77F00] transition-colors border border-gray-100 opacity-0 group-hover/avatar:opacity-100 focus:opacity-100">
-                  <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
-                </button>
+                <div className="absolute -top-2 -right-2 z-20 flex flex-col gap-2">
+                  <button 
+                    onClick={() => setShowUploader(true)}
+                    className="bg-white p-2.5 rounded-2xl shadow-xl text-gray-500 hover:text-[#F77F00] transition-all border border-gray-100 hover:scale-110 active:scale-95"
+                    title="Change Photo"
+                  >
+                    <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
+                  </button>
+                  {user?.profilePicture && (
+                    <button 
+                      onClick={handleDeletePicture}
+                      disabled={isDeleting}
+                      className="bg-white p-2.5 rounded-2xl shadow-xl text-gray-500 hover:text-red-500 transition-all border border-gray-100 hover:scale-110 active:scale-95 disabled:opacity-50"
+                      title="Remove Photo"
+                    >
+                      <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Core Info */}
@@ -151,9 +192,31 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
+
+        {/* Avatar Uploader Modal */}
+        {showUploader && (
+          <AvatarUploader onClose={() => setShowUploader(false)} />
+        )}
+
+        {/* Lightbox / High-res Viewer */}
+        {showLightbox && user?.profilePicture && (
+          <div 
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300"
+            onClick={() => setShowLightbox(false)}
+          >
+            <button className="absolute top-10 right-10 text-white/50 hover:text-white transition-colors">
+              <X className="w-10 h-10" />
+            </button>
+            <img 
+              src={`http://localhost:8080${user.profilePicture}`} 
+              alt="Profile" 
+              className="max-w-full max-h-full rounded-3xl shadow-2xl object-contain animate-in zoom-in duration-500" 
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
