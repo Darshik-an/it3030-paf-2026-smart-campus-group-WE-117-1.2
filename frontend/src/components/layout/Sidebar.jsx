@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { 
   Building, Calendar, Wrench, Users, Shield, LogOut, 
-  LayoutDashboard, X, UserPlus, FileText, ClipboardList, Briefcase, HeadphonesIcon 
+  LayoutDashboard, X, UserPlus, FileText, ClipboardList, Briefcase, HeadphonesIcon
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -61,7 +61,9 @@ export default function Sidebar({
     <>
       {/* Overlay for Sidebar */}
       <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${
+          isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        } ${isMobileMenuOpen ? '' : 'pointer-events-none'}`}
         onClick={() => {
           setIsMobileMenuOpen(false);
           if (setIsDesktopMenuOpen) setIsDesktopMenuOpen(false);
@@ -96,10 +98,16 @@ export default function Sidebar({
             {role === 'USER' || isAdmin ? (
               // Regular User and Admin Menu Items
               <>
-                {renderNavButton(Building, 'Facilities', 'facilities')}
+                <button
+                  onClick={() => handleNavigation('/dashboard/facilities', 'facilities')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard/facilities') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Building className="w-5 h-5" />
+                  <span>Facilities</span>
+                </button>
                 <button
                   onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'bookings') || location.pathname.startsWith('/dashboard/bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard/bookings') || location.pathname.startsWith('/dashboard/bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
                 >
                   <Calendar className="w-5 h-5" />
                   <span>Bookings</span>
@@ -135,7 +143,7 @@ export default function Sidebar({
                 )}
                 {role === 'STUDENT_SUPPORT' && (
                   <>
-                    {renderNavButton(HeadphonesIcon, 'Helpdesk Tickets', 'helpdesk-tickets')}
+                    {renderNavButton(HeadphonesIcon, 'Technicians', 'helpdesk-tickets')}
                   </>
                 )}
               </>

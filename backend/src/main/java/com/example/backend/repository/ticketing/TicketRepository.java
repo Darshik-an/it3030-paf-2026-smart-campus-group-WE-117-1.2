@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByUserOrderByCreatedAtDesc(User user);
     Optional<Ticket> findByIdAndUser(Long id, User user);
+    List<Ticket> findAllByOrderByCreatedAtDesc();
 }

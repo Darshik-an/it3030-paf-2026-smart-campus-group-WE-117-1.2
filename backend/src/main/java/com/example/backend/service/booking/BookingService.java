@@ -1,24 +1,27 @@
 package com.example.backend.service.booking;
 
-import com.example.backend.model.auth.User;
-import com.example.backend.model.booking.Booking;
-import com.example.backend.model.booking.Resource;
-import com.example.backend.repository.booking.BookingRepository;
-import com.example.backend.repository.booking.ResourceRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.example.backend.model.Resource;
+import com.example.backend.model.auth.User;
+import com.example.backend.model.booking.Booking;
+import com.example.backend.repository.ResourceRepository;
+import com.example.backend.repository.booking.BookingRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class BookingService {
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
+    private static final LocalTime BOOKING_START_TIME = LocalTime.of(8, 0);
+    private static final LocalTime BOOKING_END_TIME = LocalTime.of(17, 30);
 
     /**
      * Create a new booking after checking for conflicts
@@ -26,6 +29,8 @@ public class BookingService {
     public Booking createBooking(User user, Long resourceId, LocalDate bookingDate, 
                                 LocalTime startTime, LocalTime endTime, String purpose, 
                                 Integer expectedAttendees) {
+        validateBookingDateAndTime(bookingDate, startTime, endTime);
+
         // Validate resource exists
         Resource resource = resourceRepository.findById(resourceId)
             .orElseThrow(() -> new RuntimeException("Resource not found"));
@@ -132,6 +137,59 @@ public class BookingService {
 
         booking.setStatus(Booking.BookingStatus.CANCELLED);
         return bookingRepository.save(booking);
+    }
+
+    /**
+     * Edit a booking owned by current user.
+     */
+    public Booking editBooking(Long bookingId, User user, LocalDate bookingDate,
+                               LocalTime startTime, LocalTime endTime, String purpose,
+                               Integer expectedAttendees) {
+        validateBookingDateAndTime(bookingDate, startTime, endTime);
+
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (!booking.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized: You can only edit your own bookings");
+        }
+
+        if (booking.getStatus() != Booking.BookingStatus.PENDING) {
+            throw new RuntimeException("Only pending bookings can be edited");
+        }
+
+        boolean hasConflict = hasConflictExcluding(
+            booking.getResource().getId(),
+            bookingDate,
+            startTime,
+            endTime,
+            booking.getId()
+        );
+        if (hasConflict) {
+            throw new RuntimeException("Time slot conflict: Resource is already booked for this time");
+        }
+
+        booking.setBookingDate(bookingDate);
+        booking.setStartTime(startTime);
+        booking.setEndTime(endTime);
+        booking.setPurpose(purpose);
+        booking.setExpectedAttendees(expectedAttendees);
+
+        return bookingRepository.save(booking);
+    }
+
+    private void validateBookingDateAndTime(LocalDate bookingDate, LocalTime startTime, LocalTime endTime) {
+        if (bookingDate.isBefore(LocalDate.now())) {
+            throw new RuntimeException("Booking date cannot be in the past");
+        }
+
+        if (!startTime.isBefore(endTime)) {
+            throw new RuntimeException("Start time must be before end time");
+        }
+
+        if (startTime.isBefore(BOOKING_START_TIME) || endTime.isAfter(BOOKING_END_TIME)) {
+            throw new RuntimeException("Booking time must be between 08:00 and 17:30");
+        }
     }
 
     /**
