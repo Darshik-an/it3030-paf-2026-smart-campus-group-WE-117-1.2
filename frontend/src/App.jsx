@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import { BookingProvider } from './features/bookings/context/BookingContext';
+import { ToastProvider } from './components/ui/ToastProvider';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import AdminLogin from './features/auth/pages/AdminLogin';
@@ -20,10 +21,11 @@ import {
 
 function App() {
   return (
-    <AuthProvider>
-      <BookingProvider>
-        <BrowserRouter>
-          <Routes>
+    <ToastProvider>
+      <AuthProvider>
+        <BookingProvider>
+          <BrowserRouter>
+            <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/signup" element={<SignupPage />} />
@@ -69,10 +71,11 @@ function App() {
             <Route path="/my-bookings" element={<Navigate to="/dashboard/bookings/my" replace />} />
             <Route path="/bookings/:id" element={<Navigate to="/dashboard/bookings" replace />} />
             <Route path="/" element={<LandingPage />} />
-          </Routes>
-        </BrowserRouter>
-      </BookingProvider>
-    </AuthProvider>
+            </Routes>
+          </BrowserRouter>
+        </BookingProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

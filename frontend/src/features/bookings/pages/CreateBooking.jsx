@@ -2,6 +2,7 @@ import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BookingForm from '../components/BookingForm';
 import { useBooking } from '../context/BookingContext';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 const CreateBooking = () => {
   const [searchParams] = useSearchParams();
@@ -10,19 +11,29 @@ const CreateBooking = () => {
     createBooking,
     bookingLoading,
     bookingError,
-    resources
+    resources,
+    fetchResources
   } = useBooking();
+  const { showToast } = useToast();
 
   const resourceId = searchParams.get('resourceId');
+
+  React.useEffect(() => {
+    fetchResources();
+  }, []);
 
   const handleSubmit = async (formData) => {
     try {
       await createBooking(formData);
-      alert('Booking request submitted successfully!');
+      showToast('Booking request submitted successfully!', 'success');
       navigate('/dashboard/bookings/my');
     } catch (err) {
-      console.error('Error creating booking:', err);
-      alert('Failed to create booking. Please try again.');
+      const serverMessage = err.response?.data?.message
+        || err.response?.data?.error
+        || (typeof err.response?.data === 'string' ? err.response.data : null)
+        || err.message;
+      console.error('Error creating booking:', serverMessage, err);
+      showToast(`Failed to create booking: ${serverMessage}`, 'error');
     }
   };
 

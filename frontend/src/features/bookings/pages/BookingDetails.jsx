@@ -1,26 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import BookingStatus from '../components/BookingStatus';
 import { useBooking } from '../context/BookingContext';
+import { useToast } from '../../../components/ui/ToastProvider';
 
-const BookingDetails = () => {
+const BookingDetails = ({ routeBookingId = null }) => {
+  const BUSINESS_START_TIME = '08:00';
+  const BUSINESS_END_TIME = '17:30';
+  const today = new Date().toISOString().split('T')[0];
   const { id } = useParams();
   const navigate = useNavigate();
   const {
     getBookingById,
     fetchBookingById,
     cancelBooking,
+    editBooking,
     bookingLoading,
     bookingError
   } = useBooking();
-  const bookingId = parseInt(id, 10);
+  const { showToast } = useToast();
+  const bookingId = useMemo(() => {
+    if (Number.isInteger(routeBookingId) && routeBookingId > 0) {
+      return routeBookingId;
+    }
+
+    const parsedId = Number.parseInt(id, 10);
+    return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+  }, [routeBookingId, id]);
   const [fetchedBooking, setFetchedBooking] = useState(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    bookingDate: '',
+    startTime: '',
+    endTime: '',
+    purpose: '',
+    expectedAttendees: 1
+  });
 
   const booking = getBookingById(bookingId) || fetchedBooking;
 
   useEffect(() => {
-    if (!booking) {
+    if (bookingId && !booking) {
       const loadBooking = async () => {
         try {
           const fetched = await fetchBookingById(bookingId);
@@ -32,7 +55,20 @@ const BookingDetails = () => {
 
       loadBooking();
     }
-  }, [booking, bookingId]);
+  }, [booking, bookingId, fetchBookingById]);
+
+  if (!bookingId) {
+    return (
+      <div className="w-full space-y-4">
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-8 text-center shadow-sm">
+          <p className="text-rose-700 text-lg mb-4">Invalid booking ID.</p>
+          <Link to="/dashboard/bookings/my" className="text-blue-600 hover:underline font-semibold">
+            ← Back to My Bookings
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (bookingLoading && !booking) {
     return (
@@ -68,6 +104,70 @@ const BookingDetails = () => {
     );
   }
 
+  const startEditing = () => {
+    setEditForm({
+      bookingDate: booking.bookingDate || '',
+      startTime: booking.startTime || '',
+      endTime: booking.endTime || '',
+      purpose: booking.purpose || '',
+      expectedAttendees: booking.expectedAttendees || 1
+    });
+    setIsEditing(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const saveEdit = async () => {
+    if (!editForm.bookingDate || !editForm.startTime || !editForm.endTime || !editForm.purpose.trim()) {
+      showToast('Please fill all required fields.', 'error');
+      return;
+    }
+    if (editForm.bookingDate < today) {
+      showToast('Booking date cannot be in the past.', 'error');
+      return;
+    }
+
+    const attendees = Number(editForm.expectedAttendees);
+    if (!Number.isInteger(attendees) || attendees < 1) {
+      showToast('Expected attendees must be at least 1.', 'error');
+      return;
+    }
+
+    if (editForm.startTime >= editForm.endTime) {
+      showToast('End time must be after start time.', 'error');
+      return;
+    }
+    if (editForm.startTime < BUSINESS_START_TIME || editForm.endTime > BUSINESS_END_TIME) {
+      showToast('Booking time must be between 08:00 and 17:30.', 'error');
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      const updated = await editBooking(booking.id, {
+        bookingDate: editForm.bookingDate,
+        startTime: editForm.startTime,
+        endTime: editForm.endTime,
+        purpose: editForm.purpose.trim(),
+        expectedAttendees: attendees
+      });
+      setFetchedBooking(updated);
+      setIsEditing(false);
+      showToast('Booking updated successfully.', 'success');
+    } catch (err) {
+      const message = err.response?.data?.message
+        || err.response?.data?.error
+        || (typeof err.response?.data === 'string' ? err.response.data : null)
+        || 'Failed to update booking.';
+      showToast(message, 'error');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -86,17 +186,20 @@ const BookingDetails = () => {
   };
 
   const handleCancel = async () => {
-    if (window.confirm('Are you sure you want to cancel this booking?')) {
-      setIsCancelling(true);
-      try {
-        await cancelBooking(booking.id);
-        alert('Booking cancelled successfully.');
-        navigate('/dashboard/bookings/my');
-      } catch (err) {
-        alert('Failed to cancel booking.');
-      } finally {
-        setIsCancelling(false);
-      }
+    setIsCancelling(true);
+    try {
+      await cancelBooking(booking.id);
+      showToast('Booking cancelled successfully.', 'success');
+      navigate('/dashboard/bookings/my');
+    } catch (err) {
+      const message = err.response?.data?.message
+        || err.response?.data?.error
+        || (typeof err.response?.data === 'string' ? err.response.data : null)
+        || 'Failed to cancel booking.';
+      showToast(message, 'error');
+    } finally {
+      setShowCancelConfirm(false);
+      setIsCancelling(false);
     }
   };
 
@@ -149,21 +252,66 @@ const BookingDetails = () => {
             <div className="space-y-4">
               <div>
                 <p className="text-slate-600 text-sm font-semibold">📅 Date</p>
-                <p className="text-lg text-slate-900 font-black">
-                  {formatDate(booking.bookingDate)}
-                </p>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    name="bookingDate"
+                    value={editForm.bookingDate}
+                    onChange={handleEditChange}
+                    min={today}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                ) : (
+                  <p className="text-lg text-slate-900 font-black">
+                    {formatDate(booking.bookingDate)}
+                  </p>
+                )}
               </div>
 
               <div>
                 <p className="text-slate-600 text-sm font-semibold">⏰ Time</p>
-                <p className="text-lg text-slate-900 font-black">
-                  {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
-                </p>
+                {isEditing ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="time"
+                      name="startTime"
+                      value={editForm.startTime}
+                      onChange={handleEditChange}
+                      min={BUSINESS_START_TIME}
+                      max={BUSINESS_END_TIME}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                    <input
+                      type="time"
+                      name="endTime"
+                      value={editForm.endTime}
+                      onChange={handleEditChange}
+                      min={BUSINESS_START_TIME}
+                      max={BUSINESS_END_TIME}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-lg text-slate-900 font-black">
+                    {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                  </p>
+                )}
               </div>
 
               <div>
                 <p className="text-slate-600 text-sm font-semibold">👥 Expected Attendees</p>
-                <p className="text-lg text-slate-900 font-black">{booking.expectedAttendees}</p>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    min="1"
+                    name="expectedAttendees"
+                    value={editForm.expectedAttendees}
+                    onChange={handleEditChange}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                ) : (
+                  <p className="text-lg text-slate-900 font-black">{booking.expectedAttendees}</p>
+                )}
               </div>
             </div>
 
@@ -176,7 +324,17 @@ const BookingDetails = () => {
 
               <div>
                 <p className="text-slate-600 text-sm font-semibold">📝 Purpose</p>
-                <p className="text-slate-800">{booking.purpose}</p>
+                {isEditing ? (
+                  <textarea
+                    name="purpose"
+                    value={editForm.purpose}
+                    onChange={handleEditChange}
+                    rows="3"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                ) : (
+                  <p className="text-slate-800">{booking.purpose}</p>
+                )}
               </div>
             </div>
           </div>
@@ -197,9 +355,34 @@ const BookingDetails = () => {
             >
               Back to List
             </button>
-            {booking.status === 'APPROVED' && (
+            {booking.status === 'PENDING' && !isEditing && (
               <button
-                onClick={handleCancel}
+                onClick={startEditing}
+                className="flex-1 min-w-[150px] bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 font-semibold transition"
+              >
+                Edit Booking
+              </button>
+            )}
+            {isEditing && (
+              <>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 min-w-[150px] bg-slate-200 text-slate-700 py-3 px-6 rounded-lg hover:bg-slate-300 font-semibold transition"
+                >
+                  Cancel Edit
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={isSavingEdit}
+                  className="flex-1 min-w-[150px] bg-emerald-600 text-white py-3 px-6 rounded-lg hover:bg-emerald-700 disabled:bg-slate-400 font-semibold transition"
+                >
+                  {isSavingEdit ? 'Saving...' : 'Save Changes'}
+                </button>
+              </>
+            )}
+            {booking.status === 'APPROVED' && !isEditing && (
+              <button
+                onClick={() => setShowCancelConfirm(true)}
                 disabled={isCancelling}
                 className="flex-1 min-w-[150px] bg-rose-500 text-white py-3 px-6 rounded-lg hover:bg-rose-600 disabled:bg-slate-400 font-semibold transition"
               >
@@ -219,6 +402,32 @@ const BookingDetails = () => {
           <li>• Cancellation notifications will be sent to admins.</li>
         </ul>
       </div>
+
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-black text-slate-900">Confirm Cancellation</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Are you sure you want to cancel this booking? This action cannot be undone.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 rounded-lg bg-slate-200 px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-300"
+              >
+                Keep Booking
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={isCancelling}
+                className="flex-1 rounded-lg bg-rose-600 px-4 py-2.5 font-semibold text-white hover:bg-rose-700 disabled:bg-slate-400"
+              >
+                {isCancelling ? 'Cancelling...' : 'Yes, Cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

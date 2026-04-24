@@ -6,6 +6,7 @@ import java.time.LocalTime;
 
 import com.example.backend.model.booking.Booking;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,8 +21,14 @@ public class BookingResponse {
     private Long resourceId;
     private String resourceName;
     private String location;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate bookingDate;
+    
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
+    
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
     private String purpose;
     private Integer expectedAttendees;
