@@ -5,8 +5,10 @@ import api from "../../services/api";
 export default function TicketDashboard() {
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [techError, setTechError] = useState("");
   const [savingId, setSavingId] = useState(null);
 
   const fetchTickets = async () => {
@@ -27,11 +29,29 @@ export default function TicketDashboard() {
     fetchTickets();
   }, []);
 
+  useEffect(() => {
+    const fetchTechnicians = async () => {
+      setTechError("");
+      try {
+        const response = await api.get("/api/helpdesk/technicians");
+        const list = Array.isArray(response.data) ? response.data : [];
+        setTechnicians(list);
+      } catch (err) {
+        const message = err.response?.data || "Failed to load technicians.";
+        setTechError(typeof message === "string" ? message : "Failed to load technicians.");
+        setTechnicians([]);
+      }
+    };
+
+    fetchTechnicians();
+  }, []);
+
   const stats = useMemo(() => {
     const open = tickets.filter((t) => t.status === "OPEN").length;
     const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
     const resolved = tickets.filter((t) => t.status === "RESOLVED").length;
-    return { open, inProgress, resolved, total: tickets.length };
+    const closed = tickets.filter((t) => t.status === "CLOSED").length;
+    return { open, inProgress, resolved, closed, total: tickets.length };
   }, [tickets]);
 
   const updateTicket = async (ticketId, payload) => {
@@ -43,6 +63,22 @@ export default function TicketDashboard() {
     } catch (err) {
       const message = err.response?.data || "Failed to update ticket.";
       alert(typeof message === "string" ? message : "Failed to update ticket.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const deleteTicket = async (ticketId) => {
+    if (!window.confirm(`Delete ticket #${ticketId}? This action cannot be undone.`)) {
+      return;
+    }
+    setSavingId(ticketId);
+    try {
+      await api.delete(`/api/tickets/manage/${ticketId}`);
+      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
+    } catch (err) {
+      const message = err.response?.data || "Failed to delete ticket.";
+      alert(typeof message === "string" ? message : "Failed to delete ticket.");
     } finally {
       setSavingId(null);
     }
@@ -88,12 +124,9 @@ export default function TicketDashboard() {
           <p className="text-green-600 text-sm">Resolved from ticket queue</p>
         </div>
 
-        <div className="bg-[#4a1d00] text-white rounded-xl p-5 shadow-sm">
-          <p className="text-sm font-semibold mb-2">SYSTEM STATUS</p>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <span className="w-3 h-3 bg-green-400 rounded-full"></span>
-            Optimal
-          </h2>
+        <div className="bg-white rounded-xl p-5 border-l-4 border-blue-500 shadow-sm">
+          <p className="text-sm font-semibold mb-2">CLOSED TICKET</p>
+          <h2 className="text-3xl font-bold">{stats.closed}</h2>
           <p className="text-xs text-gray-300 mt-2">
             All systems stable. Maintenance at 02:00 AM.
           </p>
@@ -117,6 +150,9 @@ export default function TicketDashboard() {
             <button onClick={fetchTickets} className="bg-gray-200 px-3 py-1 rounded text-sm">Refresh</button>
           </div>
         </div>
+        {techError && (
+          <div className="px-5 py-3 text-sm text-red-600 border-b">{techError}</div>
+        )}
 
         {/* Table */}
         <div>
@@ -208,24 +244,42 @@ export default function TicketDashboard() {
 
               {/* Tech */}
               <div className="space-y-2">
-                <input
+                <select
                   className="w-full border rounded px-2 py-1 text-xs"
-                  placeholder="Assigned technician"
-                  defaultValue={t.assignedTechnician || ""}
+                  value={t.assignedTechnician || ""}
                   onClick={(e) => e.stopPropagation()}
-                  onBlur={(e) => updateTicket(t.id, { assignedTechnician: e.target.value })}
-                  disabled={savingId === t.id}
-                />
-                <button
-                  className="text-xs px-2 py-1 rounded bg-red-100 text-red-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateTicket(t.id, { status: "REJECTED" });
-                  }}
+                  onChange={(e) => updateTicket(t.id, { assignedTechnician: e.target.value })}
                   disabled={savingId === t.id}
                 >
-                  Reject
-                </button>
+                  <option value="">Unassigned</option>
+                  {technicians.map((tech) => (
+                    <option key={tech.id} value={tech.name}>
+                      {tech.name} ({tech.techId})
+                    </option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="text-xs px-2 py-1 rounded bg-red-100 text-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateTicket(t.id, { status: "REJECTED" });
+                    }}
+                    disabled={savingId === t.id}
+                  >
+                    Reject
+                  </button>
+                  <button
+                    className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteTicket(t.id);
+                    }}
+                    disabled={savingId === t.id}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
 
             </div>

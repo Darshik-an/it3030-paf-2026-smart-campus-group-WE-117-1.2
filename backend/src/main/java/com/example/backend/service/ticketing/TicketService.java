@@ -21,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TicketService {
     private final TicketRepository ticketRepository;
+    private final HelpdeskTechnicianService technicianService;
 
     public List<Ticket> getUserTickets(User user) {
         return ticketRepository.findByUserOrderByCreatedAtDesc(user);
@@ -71,7 +72,9 @@ public class TicketService {
         if (storedImages.size() > 1) ticket.setImage2(storedImages.get(1));
         if (storedImages.size() > 2) ticket.setImage3(storedImages.get(2));
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
     }
 
     public Ticket updateTicketByManagement(
@@ -103,7 +106,16 @@ public class TicketService {
             ticket.setRejectionReason(rejectionReason.trim().isEmpty() ? null : rejectionReason.trim());
         }
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
+    }
+
+    public void deleteTicketByManagement(Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+        ticketRepository.delete(ticket);
+        technicianService.syncActiveTicketsFromTickets();
     }
 
     private List<String> storeImages(List<MultipartFile> images) {

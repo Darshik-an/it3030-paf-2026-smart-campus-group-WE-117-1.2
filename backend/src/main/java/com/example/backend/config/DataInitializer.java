@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 
@@ -25,10 +26,12 @@ public class DataInitializer {
     private final UserRepository userRepository;
     private final HelpdeskTechnicianRepository helpdeskTechnicianRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     @Bean
     public CommandLineRunner seedUsers() {
         return args -> {
+            dropLegacyTechnicianActiveTicketsTable();
             seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
             seedUserIfNotExists("user@smartcampus.edu", "Regular User", "User@123", User.Role.USER);
             seedUserIfNotExists("lecturer@smartcampus.edu", "Lecturer User", "Lecturer@123", User.Role.LECTURER);
@@ -39,6 +42,14 @@ public class DataInitializer {
             seedUserIfNotExists("technician@smartcampus.edu", "Technician User", "Technician@123", User.Role.TECHNICIAN);
             seedHelpdeskTechniciansIfEmpty();
         };
+    }
+
+    private void dropLegacyTechnicianActiveTicketsTable() {
+        try {
+            jdbcTemplate.execute("DROP TABLE IF EXISTS helpdesk_technician_active_tickets");
+        } catch (Exception ex) {
+            log.warn("Could not drop legacy table helpdesk_technician_active_tickets: {}", ex.getMessage());
+        }
     }
 
     private void seedHelpdeskTechniciansIfEmpty() {

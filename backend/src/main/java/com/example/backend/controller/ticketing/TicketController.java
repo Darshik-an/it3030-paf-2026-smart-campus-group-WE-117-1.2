@@ -108,6 +108,22 @@ public class TicketController {
         }
     }
 
+    @DeleteMapping("/manage/{id}")
+    public ResponseEntity<?> deleteTicketForManagement(@PathVariable Long id) {
+        try {
+            User user = getCurrentUser();
+            if (!canManageTickets(user)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            ticketService.deleteTicketByManagement(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createTicket(@RequestBody CreateTicketRequest request) {
         try {
