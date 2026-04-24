@@ -58,6 +58,28 @@ public class TicketController {
                         .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
             }
 
+            if (user.getRole() == User.Role.TECHNICIAN) {
+                return ticketService.getTicketById(id)
+                        .<ResponseEntity<?>>map(ticket -> {
+                            String assigned = ticket.getAssignedTechnician();
+                            if (assigned == null || assigned.isBlank()) {
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found");
+                            }
+
+                            String assignedKey = assigned.trim().toLowerCase();
+                            String nameKey = user.getName() != null ? user.getName().trim().toLowerCase() : "";
+                            String emailKey = user.getEmail() != null ? user.getEmail().trim().toLowerCase() : "";
+
+                            boolean isMine = (!nameKey.isBlank() && assignedKey.equals(nameKey))
+                                    || (!emailKey.isBlank() && assignedKey.equals(emailKey));
+                            if (!isMine) {
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found");
+                            }
+                            return ResponseEntity.ok(TicketResponse.from(ticket));
+                        })
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
+            }
+
             return ticketService.getUserTicketById(user, id)
                     .<ResponseEntity<?>>map(ticket -> ResponseEntity.ok(TicketResponse.from(ticket)))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Ticket not found"));
@@ -80,6 +102,102 @@ public class TicketController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/technician")
+    public ResponseEntity<?> getTicketsForTechnician() {
+        try {
+            User user = getCurrentUser();
+            if (user.getRole() != User.Role.TECHNICIAN) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            List<TicketResponse> response = ticketService.getTicketsAssignedToTechnician(user)
+                    .stream()
+                    .map(TicketResponse::from)
+                    .toList();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<?> getTicketComments(@PathVariable Long id) {
+        try {
+            User user = getCurrentUser();
+            List<TicketCommentResponse> response = ticketService.getCommentsForTicket(user, id)
+                    .stream()
+                    .map(TicketCommentResponse::from)
+                    .toList();
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            String msg = e.getMessage() == null ? "Request failed" : e.getMessage();
+            if (msg.toLowerCase().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + msg);
+            }
+            return ResponseEntity.badRequest().body("Error: " + msg);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<?> createTicketComment(
+            @PathVariable Long id,
+            @RequestBody CreateTicketCommentRequest request
+    ) {
+        try {
+            User user = getCurrentUser();
+            var created = ticketService.addCommentToTicket(user, id, request.getMessage());
+            return ResponseEntity.status(HttpStatus.CREATED).body(TicketCommentResponse.from(created));
+        } catch (IllegalArgumentException e) {
+            String msg = e.getMessage() == null ? "Request failed" : e.getMessage();
+            if (msg.toLowerCase().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + msg);
+            }
+            return ResponseEntity.badRequest().body("Error: " + msg);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<?> deleteTicketComment(
+            @PathVariable Long id,
+            @PathVariable Long commentId
+    ) {
+        try {
+            User user = getCurrentUser();
+            ticketService.deleteMyComment(user, id, commentId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            String msg = e.getMessage() == null ? "Request failed" : e.getMessage();
+            if (msg.toLowerCase().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + msg);
+            }
+            return ResponseEntity.badRequest().body("Error: " + msg);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/technician/{id}")
+    public ResponseEntity<?> updateTicketForTechnician(
+            @PathVariable Long id,
+            @RequestBody UpdateTicketTechnicianRequest request
+    ) {
+        try {
+            User user = getCurrentUser();
+            if (user.getRole() != User.Role.TECHNICIAN) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            Ticket updated = ticketService.updateTicketStatusByTechnician(user, id, request.getStatus());
+            return ResponseEntity.ok(TicketResponse.from(updated));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 

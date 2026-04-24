@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 @Slf4j
 @Configuration
@@ -41,6 +42,7 @@ public class DataInitializer {
             seedUserIfNotExists("support@smartcampus.edu", "Student Support", "Support@123", User.Role.STUDENT_SUPPORT);
             seedUserIfNotExists("technician@smartcampus.edu", "Technician User", "Technician@123", User.Role.TECHNICIAN);
             seedHelpdeskTechniciansIfEmpty();
+            seedTechnicianUsersFromHelpdeskRoster();
         };
     }
 
@@ -70,6 +72,28 @@ public class DataInitializer {
         } catch (Exception ex) {
             log.warn("Skipping helpdesk technician seed: {}", ex.getMessage());
         }
+    }
+
+    private void seedTechnicianUsersFromHelpdeskRoster() {
+        final String defaultPassword = "Technician@123";
+        helpdeskTechnicianRepository.findAll().forEach(t -> {
+            String email = t.getEmail() != null ? t.getEmail().trim().toLowerCase(Locale.ROOT) : "";
+            if (email.isBlank()) return;
+            if (userRepository.findByEmail(email).isPresent()) return;
+
+            try {
+                User user = new User();
+                user.setEmail(email);
+                user.setName(t.getName() != null ? t.getName().trim() : "Technician");
+                user.setPassword(passwordEncoder.encode(defaultPassword));
+                user.setRole(User.Role.TECHNICIAN);
+                user.setLastLoggedIn(LocalDateTime.now());
+                userRepository.save(user);
+                log.info("TECHNICIAN user seeded from helpdesk roster: {} / {}", email, defaultPassword);
+            } catch (Exception ex) {
+                log.warn("Skipping technician user seed for {}: {}", email, ex.getMessage());
+            }
+        });
     }
 
     private static HelpdeskTechnician helpdeskTech(

@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { useAuth } from "../../features/auth/context/AuthContext";
 
 export default function TicketDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,7 +15,7 @@ export default function TicketDashboard() {
     setLoading(true);
     setError("");
     try {
-      const response = await api.get("/api/tickets/manage");
+      const response = await api.get("/api/tickets/technician");
       setTickets(response.data || []);
     } catch (err) {
       const message = err.response?.data || "Failed to load ticket data.";
@@ -31,13 +33,14 @@ export default function TicketDashboard() {
     const open = tickets.filter((t) => t.status === "OPEN").length;
     const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
     const resolved = tickets.filter((t) => t.status === "RESOLVED").length;
-    return { open, inProgress, resolved, total: tickets.length };
+    const closed = tickets.filter((t) => t.status === "CLOSED").length;
+    return { open, inProgress, resolved, closed, total: tickets.length };
   }, [tickets]);
 
   const updateTicket = async (ticketId, payload) => {
     setSavingId(ticketId);
     try {
-      const response = await api.patch(`/api/tickets/manage/${ticketId}`, payload);
+      const response = await api.patch(`/api/tickets/technician/${ticketId}`, payload);
       const updated = response.data;
       setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
     } catch (err) {
@@ -88,12 +91,9 @@ export default function TicketDashboard() {
           <p className="text-green-600 text-sm">Resolved from ticket queue</p>
         </div>
 
-        <div className="bg-[#4a1d00] text-white rounded-xl p-5 shadow-sm">
-          <p className="text-sm font-semibold mb-2">SYSTEM STATUS</p>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <span className="w-3 h-3 bg-green-400 rounded-full"></span>
-            Optimal
-          </h2>
+        <div className="bg-white rounded-xl p-5 border-l-4 border-blue-500 shadow-sm">
+          <p className="text-sm font-semibold mb-2">CLOSED TICKET</p>
+          <h2 className="text-3xl font-bold">{stats.closed}</h2>
           <p className="text-xs text-gray-300 mt-2">
             All systems stable. Maintenance at 02:00 AM.
           </p>
@@ -107,7 +107,10 @@ export default function TicketDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">Active Tickets</h2>
+            <h2 className="text-lg font-semibold">
+              My Assigned Tickets
+              {user?.name ? <span className="ml-2 text-xs text-gray-500">({user.name})</span> : null}
+            </h2>
             <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
               {stats.total} TOTAL
             </span>
@@ -183,8 +186,6 @@ export default function TicketDashboard() {
                   onChange={(e) => updateTicket(t.id, { status: e.target.value })}
                   disabled={savingId === t.id}
                 >
-                  <option value="OPEN">OPEN</option>
-                  <option value="IN_PROGRESS">IN PROGRESS</option>
                   <option value="RESOLVED">RESOLVED</option>
                   <option value="CLOSED">CLOSED</option>
                 </select>

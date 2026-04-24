@@ -253,7 +253,7 @@ export default function TicketDashboard() {
                 >
                   <option value="">Unassigned</option>
                   {technicians.map((tech) => (
-                    <option key={tech.id} value={tech.name}>
+                    <option key={tech.id} value={tech.email}>
                       {tech.name} ({tech.techId})
                     </option>
                   ))}
