@@ -19,6 +19,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
+    localStorage.removeItem('token');
 
     try {
       const response = await api.post('/api/auth/login', { email, password });

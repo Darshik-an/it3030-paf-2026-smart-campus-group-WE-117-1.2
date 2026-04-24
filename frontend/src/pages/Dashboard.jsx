@@ -6,6 +6,7 @@ import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import UserManagement from '../features/auth/components/admin/UserManagement';
 import ManageStaff from '../features/auth/components/admin/ManageStaff';
+import SystemSettings from '../features/auth/components/admin/SystemSettings';
 import {
   BookingsDashboard,
   CreateBooking,
@@ -179,12 +180,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'settings' && isAdmin && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-[#D62828] flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#D62828] mb-4">System Settings</h2>
-              <p className="text-gray-500 max-w-md">
-                Developer Note: The System Settings component should be integrated here.
-              </p>
-            </div>
+            <SystemSettings />
           )}
 
           {activeTab === 'facilities' && (
@@ -208,21 +204,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* New Staff Role Routing Placeholders */}
-          {activeTab === 'my-bookings' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#003049] mb-4">My Bookings (Lecturer/Instructor)</h2>
-              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Lecturer Bookings.</p>
-            </div>
-          )}
-
-          {activeTab === 'facility-schedule' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#003049] mb-4">Facility Schedule</h2>
-              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Lecturer Facility Viewer.</p>
-            </div>
-          )}
-
           {activeTab === 'asset-inventory' && (
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
               <h2 className="text-2xl font-black text-[#003049] mb-4">Asset Inventory</h2>
@@ -234,20 +215,6 @@ export default function Dashboard() {
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
               <h2 className="text-2xl font-black text-[#003049] mb-4">Maintenance Requests</h2>
               <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Facility Manager Maintenance.</p>
-            </div>
-          )}
-
-          {activeTab === 'department-schedules' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#003049] mb-4">Department Schedules</h2>
-              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Coordinator Schedules.</p>
-            </div>
-          )}
-
-          {activeTab === 'approvals' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <h2 className="text-2xl font-black text-[#003049] mb-4">Pending Approvals</h2>
-              <p className="text-gray-500 max-w-md">Developer Note: Component placeholder for Coordinator Approvals.</p>
             </div>
           )}
 

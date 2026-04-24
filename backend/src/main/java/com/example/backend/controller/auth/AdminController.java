@@ -87,7 +87,74 @@ public class AdminController {
                     .body(Map.of("error", "Invalid role. Must be one of: " + validRoles));
         }
         userRepository.save(user);
+        user.setPassword(null);
         return ResponseEntity.ok(user);
+    }
+
+    @PatchMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUser(@PathVariable Long userId,
+                                        @RequestBody UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String newEmail = request.getEmail().trim().toLowerCase();
+            if (!newEmail.equals(user.getEmail())
+                    && userRepository.findByEmail(newEmail).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Email already in use"));
+            }
+            user.setEmail(newEmail);
+        }
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber().isBlank() ? null : request.getPhoneNumber().trim());
+        }
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            if (request.getPassword().length() < 6) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 6 characters"));
+            }
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (request.getRole() != null) {
+            user.setRole(request.getRole());
+        }
+
+        User saved = userRepository.save(user);
+        saved.setPassword(null);
+        return ResponseEntity.ok(saved);
+    }
+
+    @PostMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+        if (request.getName() == null || request.getName().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Name is required"));
+        }
+        if (request.getPassword() == null || request.getPassword().length() < 6) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 6 characters"));
+        }
+        String email = request.getEmail().trim().toLowerCase();
+        if (userRepository.findByEmail(email).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email already exists"));
+        }
+
+        User user = new User();
+        user.setEmail(email);
+        user.setName(request.getName().trim());
+        user.setPhoneNumber(request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()
+                ? null : request.getPhoneNumber().trim());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(User.Role.USER);
+
+        User saved = userRepository.save(user);
+        saved.setPassword(null);
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/users/{userId}")
@@ -98,5 +165,22 @@ public class AdminController {
         }
         userRepository.deleteById(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @lombok.Data
+    public static class UpdateUserRequest {
+        private String name;
+        private String email;
+        private String phoneNumber;
+        private String password;
+        private User.Role role;
+    }
+
+    @lombok.Data
+    public static class CreateUserRequest {
+        private String name;
+        private String email;
+        private String phoneNumber;
+        private String password;
     }
 }

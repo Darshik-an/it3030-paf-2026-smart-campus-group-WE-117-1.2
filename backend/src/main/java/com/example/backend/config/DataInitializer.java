@@ -33,17 +33,28 @@ public class DataInitializer {
     public CommandLineRunner seedUsers() {
         return args -> {
             dropLegacyTechnicianActiveTicketsTable();
+            purgeRetiredRoleUsers();
             seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
             seedUserIfNotExists("user@smartcampus.edu", "Regular User", "User@123", User.Role.USER);
-            seedUserIfNotExists("lecturer@smartcampus.edu", "Lecturer User", "Lecturer@123", User.Role.LECTURER);
-            seedUserIfNotExists("instructor@smartcampus.edu", "Instructor User", "Instructor@123", User.Role.INSTRUCTOR);
             seedUserIfNotExists("facility_manager@smartcampus.edu", "Facility Manager", "Manager@123", User.Role.FACILITY_MANAGER);
-            seedUserIfNotExists("coordinator@smartcampus.edu", "Coordinator User", "Coordinator@123", User.Role.COORDINATOR);
             seedUserIfNotExists("support@smartcampus.edu", "Student Support", "Support@123", User.Role.STUDENT_SUPPORT);
             seedUserIfNotExists("technician@smartcampus.edu", "Technician User", "Technician@123", User.Role.TECHNICIAN);
             seedHelpdeskTechniciansIfEmpty();
             seedTechnicianUsersFromHelpdeskRoster();
         };
+    }
+
+    private void purgeRetiredRoleUsers() {
+        try {
+            int removed = jdbcTemplate.update(
+                    "DELETE FROM users WHERE role IN ('LECTURER','INSTRUCTOR','COORDINATOR')"
+            );
+            if (removed > 0) {
+                log.info("Purged {} user(s) with retired roles (LECTURER/INSTRUCTOR/COORDINATOR)", removed);
+            }
+        } catch (Exception ex) {
+            log.warn("Could not purge retired-role users: {}", ex.getMessage());
+        }
     }
 
     private void dropLegacyTechnicianActiveTicketsTable() {

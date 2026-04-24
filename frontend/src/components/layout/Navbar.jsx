@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, LogOut, Settings, UserCircle, Shield, ChevronDown } from 'lucide-react';
@@ -38,7 +38,8 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
       <div className="flex items-center gap-4 md:gap-8">
         <NotificationPanel />
 
-        {/* User info */}
+        {/* User info (hidden for admins — admin panel is the only surface they need) */}
+        {!isAdmin && (
         <div className="relative group cursor-pointer border-l border-gray-200 pl-4 md:pl-8">
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
@@ -97,6 +98,17 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
             </div>
           </div>
         </div>
+        )}
+
+        {/* Admin-only logout chip (since the avatar menu is hidden) */}
+        {isAdmin && (
+          <button
+            onClick={handleLogout}
+            className="border-l border-gray-200 pl-4 md:pl-6 text-sm font-bold text-[#D62828] hover:text-[#b01e1e] transition-colors flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> Log out
+          </button>
+        )}
       </div>
     </header>
   );
