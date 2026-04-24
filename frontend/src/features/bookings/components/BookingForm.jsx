@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResourceId = null }) => {
-  // Mock resources for dropdown
-  const mockResources = [
-    { id: 1, name: 'Meeting Room A', type: 'MEETING_ROOM', capacity: 10, location: 'Building 1, 2nd Floor' },
-    { id: 2, name: 'Lab 101', type: 'LAB', capacity: 25, location: 'Science Building, 1st Floor' },
-    { id: 3, name: 'Lecture Hall 1', type: 'LECTURE_HALL', capacity: 100, location: 'Main Hall' },
-    { id: 4, name: 'Equipment Set A', type: 'EQUIPMENT', capacity: 5, location: 'Workshop' },
-    { id: 5, name: 'Meeting Room B', type: 'MEETING_ROOM', capacity: 15, location: 'Building 2, 3rd Floor' },
-    { id: 6, name: 'Lab 102', type: 'LAB', capacity: 20, location: 'Science Building, 2nd Floor' }
-  ];
-
+  const BUSINESS_START_TIME = '08:00';
+  const BUSINESS_END_TIME = '17:30';
+  const today = new Date().toISOString().split('T')[0];
   const [availableResources, setAvailableResources] = useState([]);
 
   useEffect(() => {
-    // Use mock resources if no resources are provided from API
-    setAvailableResources(resources.length > 0 ? resources : mockResources);
+    // Ensure resources is always an array
+    setAvailableResources(Array.isArray(resources) ? resources : []);
   }, [resources]);
   const [formData, setFormData] = useState({
     resourceId: initialResourceId || '',
@@ -44,12 +37,18 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
 
   const validateForm = () => {
     const newErrors = {};
+    const parsedResourceId = Number(formData.resourceId);
+    const parsedAttendees = Number(formData.expectedAttendees);
 
     if (!formData.resourceId) {
       newErrors.resourceId = 'Please select a resource';
+    } else if (!Number.isInteger(parsedResourceId) || parsedResourceId <= 0) {
+      newErrors.resourceId = 'Selected resource is invalid';
     }
     if (!formData.bookingDate) {
       newErrors.bookingDate = 'Please select a date';
+    } else if (formData.bookingDate < today) {
+      newErrors.bookingDate = 'Booking date cannot be in the past';
     }
     if (!formData.startTime) {
       newErrors.startTime = 'Please select start time';
@@ -60,10 +59,16 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
     if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
       newErrors.endTime = 'End time must be after start time';
     }
+    if (formData.startTime && formData.startTime < BUSINESS_START_TIME) {
+      newErrors.startTime = 'Start time must be at or after 08:00';
+    }
+    if (formData.endTime && formData.endTime > BUSINESS_END_TIME) {
+      newErrors.endTime = 'End time must be at or before 17:30';
+    }
     if (!formData.purpose.trim()) {
       newErrors.purpose = 'Please enter the purpose of booking';
     }
-    if (formData.expectedAttendees < 1) {
+    if (!Number.isInteger(parsedAttendees) || parsedAttendees < 1) {
       newErrors.expectedAttendees = 'Expected attendees must be at least 1';
     }
 
@@ -79,10 +84,14 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
       return;
     }
 
-    onSubmit({
+    const payload = {
       ...formData,
-      resourceId: parseInt(formData.resourceId, 10)
-    });
+      resourceId: Number(formData.resourceId),
+      expectedAttendees: Number(formData.expectedAttendees),
+      purpose: formData.purpose.trim()
+    };
+
+    onSubmit(payload);
   };
 
   return (
@@ -121,6 +130,7 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
             name="bookingDate"
             value={formData.bookingDate}
             onChange={handleChange}
+            min={today}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
               errors.bookingDate ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
             }`}
@@ -139,6 +149,8 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
               name="startTime"
               value={formData.startTime}
               onChange={handleChange}
+              min={BUSINESS_START_TIME}
+              max={BUSINESS_END_TIME}
               className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
                 errors.startTime ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
               }`}
@@ -155,6 +167,8 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
               name="endTime"
               value={formData.endTime}
               onChange={handleChange}
+              min={BUSINESS_START_TIME}
+              max={BUSINESS_END_TIME}
               className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
                 errors.endTime ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
               }`}

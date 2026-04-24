@@ -10,7 +10,8 @@ import {
   BookingsDashboard,
   CreateBooking,
   MyBookings,
-  BookingDetails
+  BookingDetails,
+  AdminBookings
 } from '../features/bookings';
 import TicketAdminDashboard from './Ticketting/TicketAdminDashboard';
 import TicketingTechnicionDashboard from './Ticketting/TicketingTechnicionDashboard';
@@ -66,21 +67,34 @@ export default function Dashboard() {
   };
 
   const renderBookingContent = () => {
-    const pathSegment = location.pathname.split('/').pop();
     const isBookingRoute = location.pathname.startsWith('/dashboard/bookings');
-    
     if (!isBookingRoute) return null;
 
-    if (pathSegment === 'create') {
+    const path = location.pathname;
+    const pathSegment = path.split('/').pop();
+
+    // Specific route for booking details (numeric ID)
+    const bookingDetailsMatch = path.match(/\/dashboard\/bookings\/(\d+)$/);
+    if (bookingDetailsMatch) {
+      const bookingId = Number(bookingDetailsMatch[1]);
+      return <BookingDetails routeBookingId={bookingId} />;
+    }
+
+    if (isAdmin) {
+      // For admins, show Booking Management by default for all booking sub-routes
+      // unless it's a specific detail view handled above.
+      return <AdminBookings />;
+    }
+
+    // Normal user routes
+    if (path.endsWith('/create')) {
       return <CreateBooking />;
     }
-    if (pathSegment === 'my') {
+    if (path.endsWith('/my')) {
       return <MyBookings />;
     }
-    if (/^\d+$/.test(pathSegment)) {
-      return <BookingDetails />;
-    }
     
+    // Default dashboard view for users
     return <BookingsDashboard />;
   };
 
