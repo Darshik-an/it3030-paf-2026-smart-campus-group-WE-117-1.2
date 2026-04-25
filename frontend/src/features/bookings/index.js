@@ -8,6 +8,8 @@ export { default as BookingDetails } from './pages/BookingDetails';
 export { default as BookingForm } from './components/BookingForm';
 export { default as BookingCard } from './components/BookingCard';
 export { default as BookingStatus } from './components/BookingStatus';
+export { default as AdminBookings } from './components/admin/AdminBookings';
+
 
 // Context
 export { BookingProvider, useBooking } from './context/BookingContext';

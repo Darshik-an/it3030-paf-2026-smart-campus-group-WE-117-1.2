@@ -17,21 +17,21 @@ export default function AdminLogin() {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError('');
+    setIsSubmitting(true);
+    localStorage.removeItem('token');
+
     try {
       const response = await api.post('/api/auth/login', { email, password });
       const token = response.data.token;
 
-      // Verify role before completing login
       const meRes = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const role = meRes.data?.role;
 
-      if (role === 'USER') {
-        setError('This portal is for staff only. Please use the Student Portal to log in.');
-        setIsSubmitting(false);
+      if (role === 'USER' || !role) {
+        setError('This portal is for staff only. Students must use the Student Portal.');
         return;
       }
 
@@ -48,10 +48,10 @@ export default function AdminLogin() {
     <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#001f30] relative overflow-hidden">
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#D62828] opacity-20 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#003049] opacity-40 rounded-full blur-[100px] pointer-events-none"></div>
-      
+
       <div className="bg-white/95 backdrop-blur-xl w-full max-w-[440px] p-10 rounded-[2.5rem] shadow-2xl relative z-10 border border-white/20">
         <Link to="/" className="absolute top-6 left-6 text-gray-400 hover:text-[#D62828] transition-colors">
-           <X className="w-6 h-6" />
+          <X className="w-6 h-6" />
         </Link>
 
         <div className="text-center mb-8 mt-4">
@@ -71,11 +71,11 @@ export default function AdminLogin() {
         <form className="space-y-5" onSubmit={handleAdminLogin}>
           <div>
             <label className="block text-xs font-bold text-[#001f30] uppercase tracking-wider mb-2 ml-1">Staff Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@smartcampus.edu" 
+              placeholder="admin@campus.lk"
               className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium"
               required
             />
@@ -83,13 +83,13 @@ export default function AdminLogin() {
           <div>
             <label className="block text-xs font-bold text-[#001f30] uppercase tracking-wider mb-2 ml-1">Password</label>
             <div className="relative">
-              <input 
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••" 
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-3.5 pr-12 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium" 
-                required 
+                className="w-full px-5 py-3.5 pr-12 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium"
+                required
               />
               <button
                 type="button"
@@ -100,10 +100,10 @@ export default function AdminLogin() {
               </button>
             </div>
           </div>
-          
-          <button 
+
+          <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading || isSubmitting}
             className="w-full bg-[#D62828] text-white py-4 rounded-xl font-bold hover:bg-[#b01e1e] transition-all shadow-xl shadow-[#D62828]/20 disabled:opacity-70 active:scale-[0.98] mt-4"
           >
             {isSubmitting ? 'Verifying...' : 'Sign In to Staff Portal'}

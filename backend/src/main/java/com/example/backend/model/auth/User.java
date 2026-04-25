@@ -29,6 +29,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String name;
 
+    private String phoneNumber;
+
     private String profilePicture;
 
     @Enumerated(EnumType.STRING)
@@ -42,7 +44,7 @@ public class User implements UserDetails {
     private LocalDateTime lastLoggedIn;
 
     public enum Role {
-        USER, ADMIN, TECHNICIAN
+        USER, ADMIN, STUDENT_SUPPORT, TECHNICIAN, FACILITY_MANAGER
     }
 
     @Override

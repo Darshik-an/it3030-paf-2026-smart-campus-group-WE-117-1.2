@@ -16,7 +16,10 @@ export function AuthProvider({ children }) {
       axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then(res => setUser(res.data))
+        .then(res => {
+          setUser(res.data);
+          localStorage.setItem('lastRole', res.data.role);
+        })
         .catch(() => {
           localStorage.removeItem('token');
           setToken(null);
@@ -42,7 +45,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, token, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -59,7 +59,7 @@ export default function NotificationPanel() {
 
     const fetchUnreadCount = async () => {
       try {
-        const response = await api.get('/notifications/unread/count');
+        const response = await api.get('/api/notifications/unread/count');
         setUnreadCount(response.data.count);
       } catch (error) {
         console.error('Failed to fetch unread count', error);
@@ -80,7 +80,7 @@ export default function NotificationPanel() {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/notifications');
+      const response = await api.get('/api/notifications');
       setNotifications(response.data);
     } catch (error) {
       console.error('Failed to fetch notifications', error);
@@ -97,7 +97,7 @@ export default function NotificationPanel() {
     }
     
     try {
-      await api.patch(`/notifications/${id}/read`);
+      await api.patch(`/api/notifications/${id}/read`);
       setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
       setUnreadCount(Math.max(0, unreadCount - 1));
     } catch (error) {
@@ -113,7 +113,7 @@ export default function NotificationPanel() {
     }
 
     try {
-      await api.post('/notifications/read-all');
+      await api.post('/api/notifications/read-all');
       setNotifications(notifications.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {

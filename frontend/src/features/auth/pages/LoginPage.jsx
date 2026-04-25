@@ -26,15 +26,13 @@ export default function LoginPage() {
       const response = await api.post('/api/auth/login', { email, password });
       const token = response.data.token;
 
-      // Verify role — only USER accounts on the student portal
       const meRes = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const role = meRes.data?.role;
 
-      if (role === 'ADMIN' || role === 'TECHNICIAN') {
-        setError('Admin/Staff accounts must use the Staff Portal to log in.');
-        setIsSubmitting(false);
+      if (role && role !== 'USER') {
+        setError('This portal is for students only. Staff must use the Staff Portal.');
         return;
       }
 

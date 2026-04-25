@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import {
   Building, Calendar, Wrench, Users, Shield, LogOut,
-  LayoutDashboard, X
+  LayoutDashboard, X, UserPlus, Briefcase, HeadphonesIcon
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -18,6 +18,7 @@ export default function Sidebar({
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
+  const role = user?.role;
 
   const handleLogout = () => {
     logout();
@@ -43,11 +44,26 @@ export default function Sidebar({
     if (setIsDesktopMenuOpen) setIsDesktopMenuOpen(false);
   };
 
+  const renderNavButton = (Icon, label, tabName) => {
+    return (
+      <button 
+        key={tabName}
+        onClick={() => handleNavigation('/dashboard', tabName)}
+        className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', tabName) ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+      >
+        <Icon className="w-5 h-5" />
+        <span>{label}</span>
+      </button>
+    );
+  };
+
   return (
     <>
       {/* Overlay for Sidebar */}
       <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${
+          isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        } ${isMobileMenuOpen ? '' : 'pointer-events-none'}`}
         onClick={() => {
           setIsMobileMenuOpen(false);
           if (setIsDesktopMenuOpen) setIsDesktopMenuOpen(false);
@@ -77,35 +93,49 @@ export default function Sidebar({
         <div className="px-6 mb-6">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Menu</p>
           <nav className="space-y-2">
-            <button 
-              onClick={() => handleNavigation('/dashboard', 'dashboard')}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'dashboard') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
-            </button>
-            <button 
-              onClick={() => handleNavigation('/dashboard/facilities', 'facilities')}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'facilities') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              <Building className="w-5 h-5" />
-              <span>Facilities</span>
-            </button>
+            {renderNavButton(LayoutDashboard, 'Dashboard', 'dashboard')}
 
-            <button 
-              onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              <Calendar className="w-5 h-5" />
-              <span>Bookings</span>
-            </button>
-            <button 
-              onClick={() => handleNavigation('/tickets')}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/tickets') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              <Wrench className="w-5 h-5" />
-              <span>Tickets</span>
-            </button>
+            {role === 'USER' || isAdmin ? (
+              // Regular User and Admin Menu Items
+              <>
+                <button
+                  onClick={() => handleNavigation('/dashboard/facilities', 'facilities')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard/facilities') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Building className="w-5 h-5" />
+                  <span>Facilities</span>
+                </button>
+                <button
+                  onClick={() => handleNavigation('/dashboard/bookings', 'bookings')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard/bookings') || location.pathname.startsWith('/dashboard/bookings') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span>Bookings</span>
+                </button>
+                <button
+                  onClick={() => handleNavigation('/tickets', 'tickets')}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/tickets') ? 'bg-[#F77F00] text-white shadow-lg shadow-[#F77F00]/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  <Wrench className="w-5 h-5" />
+                  <span>Tickets</span>
+                </button>
+              </>
+            ) : (
+              // Staff Conditional Layouts
+              <>
+                {role === 'FACILITY_MANAGER' && (
+                  <>
+                    {renderNavButton(Briefcase, 'Asset Inventory', 'asset-inventory')}
+                    {renderNavButton(Wrench, 'Maintenance', 'maintenance')}
+                  </>
+                )}
+                {role === 'STUDENT_SUPPORT' && (
+                  <>
+                    {renderNavButton(HeadphonesIcon, 'Technicians', 'helpdesk-tickets')}
+                  </>
+                )}
+              </>
+            )}
           </nav>
         </div>
 
@@ -113,7 +143,14 @@ export default function Sidebar({
           <div className="px-6 mt-4">
             <p className="text-[10px] font-bold text-[#D62828] uppercase tracking-widest mb-3">Admin Controls</p>
             <nav className="space-y-2">
-              <button 
+              <button
+                onClick={() => handleNavigation('/dashboard', 'staff')}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'staff') ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/20' : 'text-white/60 hover:text-[#D62828] hover:bg-white/5'}`}
+              >
+                <UserPlus className="w-5 h-5" />
+                <span>Manage Staff</span>
+              </button>
+              <button
                 onClick={() => handleNavigation('/dashboard', 'users')}
                 className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left font-bold ${isActive('/dashboard', 'users') ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/20' : 'text-white/60 hover:text-[#D62828] hover:bg-white/5'}`}
               >

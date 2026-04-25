@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
+@Table(name = "resources")
 public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

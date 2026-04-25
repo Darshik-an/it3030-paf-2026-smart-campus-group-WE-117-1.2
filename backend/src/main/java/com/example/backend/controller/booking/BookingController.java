@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 public class BookingController {
     private final BookingService bookingService;
     private final UserRepository userRepository;
+    private static final LocalTime BOOKING_START_TIME = LocalTime.of(8, 0);
+    private static final LocalTime BOOKING_END_TIME = LocalTime.of(17, 30);
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -42,10 +46,25 @@ public class BookingController {
             User user = getCurrentUser();
             List<Booking> bookings;
 
-            if (status != null && !status.isEmpty()) {
-                bookings = bookingService.getUserBookingsByStatus(user, status);
+            if (user.getRole() != null && user.getRole().name().equals("ADMIN")) {
+                if (status != null && !status.trim().isEmpty()) {
+                    try {
+                        Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
+                        bookings = bookingService.getAllBookings().stream()
+                            .filter(b -> b.getStatus() == bookingStatus)
+                            .collect(Collectors.toList());
+                    } catch (IllegalArgumentException e) {
+                        return ResponseEntity.badRequest().body("Invalid booking status: " + status);
+                    }
+                } else {
+                    bookings = bookingService.getAllBookings();
+                }
             } else {
-                bookings = bookingService.getUserBookings(user);
+                if (status != null && !status.trim().isEmpty()) {
+                    bookings = bookingService.getUserBookingsByStatus(user, status);
+                } else {
+                    bookings = bookingService.getUserBookings(user);
+                }
             }
 
             List<BookingResponse> responses = bookings.stream()
@@ -92,9 +111,18 @@ public class BookingController {
                 return ResponseEntity.badRequest().body("Missing required fields");
             }
 
-            // Validate time range
-            if (request.getStartTime().isAfter(request.getEndTime())) {
+            // Validate date and time range
+            if (request.getBookingDate().isBefore(LocalDate.now())) {
+                return ResponseEntity.badRequest().body("Booking date cannot be in the past");
+            }
+
+            if (!request.getStartTime().isBefore(request.getEndTime())) {
                 return ResponseEntity.badRequest().body("Start time must be before end time");
+            }
+
+            if (request.getStartTime().isBefore(BOOKING_START_TIME) ||
+                request.getEndTime().isAfter(BOOKING_END_TIME)) {
+                return ResponseEntity.badRequest().body("Booking time must be between 08:00 and 17:30");
             }
 
             User user = getCurrentUser();
@@ -157,6 +185,57 @@ public class BookingController {
         try {
             User user = getCurrentUser();
             Booking booking = bookingService.cancelBooking(id, user);
+            return ResponseEntity.ok(BookingResponse.from(booking));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * PUT /api/bookings/{id} - Edit a pending booking owned by user
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editBooking(
+        @PathVariable Long id,
+        @RequestBody UpdateBookingRequest request
+    ) {
+        try {
+            if (request.getBookingDate() == null || request.getStartTime() == null ||
+                request.getEndTime() == null || request.getPurpose() == null ||
+                request.getExpectedAttendees() == null) {
+                return ResponseEntity.badRequest().body("Missing required fields");
+            }
+
+            if (request.getExpectedAttendees() < 1) {
+                return ResponseEntity.badRequest().body("Expected attendees must be at least 1");
+            }
+
+            if (request.getBookingDate().isBefore(LocalDate.now())) {
+                return ResponseEntity.badRequest().body("Booking date cannot be in the past");
+            }
+
+            if (!request.getStartTime().isBefore(request.getEndTime())) {
+                return ResponseEntity.badRequest().body("Start time must be before end time");
+            }
+
+            if (request.getStartTime().isBefore(BOOKING_START_TIME) ||
+                request.getEndTime().isAfter(BOOKING_END_TIME)) {
+                return ResponseEntity.badRequest().body("Booking time must be between 08:00 and 17:30");
+            }
+
+            User user = getCurrentUser();
+            Booking booking = bookingService.editBooking(
+                id,
+                user,
+                request.getBookingDate(),
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getPurpose().trim(),
+                request.getExpectedAttendees()
+            );
+
             return ResponseEntity.ok(BookingResponse.from(booking));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
