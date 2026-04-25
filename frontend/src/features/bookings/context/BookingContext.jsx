@@ -158,6 +158,48 @@ export const BookingProvider = ({ children }) => {
     }
   };
 
+  const generateAttendanceCode = async (bookingId) => {
+    setBookingLoading(true);
+    setBookingError(null);
+    try {
+      const response = await api.post(`/api/bookings/${bookingId}/attendance-code`);
+      const attendanceCode = response.data?.attendanceCode;
+
+      if (attendanceCode) {
+        setBookings((prev) => prev.map((booking) => (
+          booking.id === bookingId ? { ...booking, attendanceCode } : booking
+        )));
+      }
+
+      return attendanceCode;
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setBookingError(message);
+      throw err;
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const confirmAttendance = async (attendanceCode) => {
+    setBookingLoading(true);
+    setBookingError(null);
+    try {
+      const response = await api.post('/api/bookings/attendance/confirm', { attendanceCode });
+      const updatedBooking = response.data;
+      setBookings((prev) => prev.map((booking) => (
+        booking.id === updatedBooking.id ? updatedBooking : booking
+      )));
+      return updatedBooking;
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setBookingError(message);
+      throw err;
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
   const fetchResources = async (filters = {}) => {
     setResourceLoading(true);
     setResourceError(null);
@@ -230,6 +272,8 @@ export const BookingProvider = ({ children }) => {
     updateBookingStatus,
     cancelBooking,
     editBooking,
+    generateAttendanceCode,
+    confirmAttendance,
     fetchResources,
     getResourceById,
     getBookingById

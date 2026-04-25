@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useBooking } from '../../context/BookingContext';
 import BookingStatus from '../BookingStatus';
-import { CheckCircle, XCircle, Clock, Search, User } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Search, User, QrCode } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const AdminBookings = () => {
-  const { bookings, fetchBookings, updateBookingStatus, bookingLoading } = useBooking();
+  const { bookings, fetchBookings, updateBookingStatus, generateAttendanceCode, bookingLoading } = useBooking();
   const [filter, setFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeQrBookingId, setActiveQrBookingId] = useState(null);
+  const [qrErrors, setQrErrors] = useState({});
 
   useEffect(() => {
     fetchBookings();
@@ -23,6 +26,23 @@ const AdminBookings = () => {
       alert(`Booking ${status.toLowerCase()} successfully`);
     } catch (err) {
       alert('Failed to update booking status');
+    }
+  };
+
+  const handleShowQr = async (booking) => {
+    const bookingId = booking.id;
+    setQrErrors((prev) => ({ ...prev, [bookingId]: null }));
+
+    try {
+      if (!booking.attendanceCode) {
+        await generateAttendanceCode(bookingId);
+      }
+      setActiveQrBookingId((prev) => (prev === bookingId ? null : bookingId));
+    } catch (error) {
+      setQrErrors((prev) => ({
+        ...prev,
+        [bookingId]: error.response?.data || 'Failed to generate attendance QR code'
+      }));
     }
   };
 
@@ -150,8 +170,22 @@ const AdminBookings = () => {
                     </div>
                   )}
                   {booking.status === 'APPROVED' && (
-                    <div className="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 text-center">
-                      <p className="text-xs font-black text-emerald-700 uppercase tracking-widest">Successfully Approved</p>
+                    <div className="space-y-3">
+                      <div className="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 text-center">
+                        <p className="text-xs font-black text-emerald-700 uppercase tracking-widest">Successfully Approved</p>
+                      </div>
+                      <button
+                        onClick={() => handleShowQr(booking)}
+                        className="w-full flex items-center justify-center gap-2 bg-[#003049] text-white px-4 py-3 rounded-2xl font-black hover:bg-[#002338] transition-all text-xs uppercase tracking-wider"
+                      >
+                        <QrCode className="w-4 h-4" />
+                        {activeQrBookingId === booking.id ? 'Hide Attendance QR' : 'Show Attendance QR'}
+                      </button>
+                      {qrErrors[booking.id] && (
+                        <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-3">
+                          {qrErrors[booking.id]}
+                        </p>
+                      )}
                     </div>
                   )}
                   {booking.status === 'CANCELLED' && (
@@ -161,6 +195,30 @@ const AdminBookings = () => {
                   )}
                 </div>
               </div>
+
+              {booking.status === 'APPROVED' && activeQrBookingId === booking.id && booking.attendanceCode && (
+                <div className="mt-6 pt-6 border-t border-slate-100">
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row items-center gap-5">
+                    <div className="bg-white p-3 rounded-xl border border-slate-200">
+                      <QRCodeCanvas
+                        value={booking.attendanceCode}
+                        size={180}
+                        bgColor="#ffffff"
+                        fgColor="#003049"
+                        level="M"
+                        includeMargin
+                      />
+                    </div>
+                    <div className="space-y-2 text-center md:text-left">
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-500">Attendance Code</p>
+                      <p className="text-lg font-black text-[#003049] break-all">{booking.attendanceCode}</p>
+                      <p className="text-sm text-slate-600">
+                        Ask the booking owner to scan this QR from their bookings dashboard.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))
         ) : (

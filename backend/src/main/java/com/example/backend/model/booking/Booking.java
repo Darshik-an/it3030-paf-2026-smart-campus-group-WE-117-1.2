@@ -63,6 +63,11 @@ public class Booking {
 
     private String rejectionReason;
 
+    @Column(unique = true)
+    private String attendanceCode;
+
+    private LocalDateTime attendanceConfirmedAt;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

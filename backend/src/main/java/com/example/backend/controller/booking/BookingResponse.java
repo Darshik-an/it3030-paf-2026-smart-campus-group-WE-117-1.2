@@ -34,6 +34,8 @@ public class BookingResponse {
     private Integer expectedAttendees;
     private String status;
     private String rejectionReason;
+    private String attendanceCode;
+    private LocalDateTime attendanceConfirmedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -52,6 +54,8 @@ public class BookingResponse {
             booking.getExpectedAttendees(),
             booking.getStatus().toString(),
             booking.getRejectionReason(),
+            booking.getAttendanceCode(),
+            booking.getAttendanceConfirmedAt(),
             booking.getCreatedAt(),
             booking.getUpdatedAt()
         );

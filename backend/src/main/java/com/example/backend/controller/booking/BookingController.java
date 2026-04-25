@@ -178,6 +178,50 @@ public class BookingController {
     }
 
     /**
+     * POST /api/bookings/{id}/attendance-code - Generate or fetch attendance QR code
+     */
+    @PostMapping("/{id}/attendance-code")
+    public ResponseEntity<?> generateAttendanceCode(@PathVariable Long id) {
+        try {
+            User user = getCurrentUser();
+            if (user.getRole() != User.Role.ADMIN) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only admins can generate attendance QR codes");
+            }
+
+            String attendanceCode = bookingService.generateAttendanceCode(id);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("attendanceCode", attendanceCode);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * POST /api/bookings/attendance/confirm - Confirm attendance using QR code
+     */
+    @PostMapping("/attendance/confirm")
+    public ResponseEntity<?> confirmAttendance(@RequestBody ConfirmAttendanceRequest request) {
+        try {
+            if (request == null || request.getAttendanceCode() == null || request.getAttendanceCode().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Attendance code is required");
+            }
+
+            User user = getCurrentUser();
+            Booking updatedBooking = bookingService.confirmAttendance(user, request.getAttendanceCode());
+            return ResponseEntity.ok(BookingResponse.from(updatedBooking));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
      * DELETE /api/bookings/{id} - Cancel a booking
      */
     @DeleteMapping("/{id}")
