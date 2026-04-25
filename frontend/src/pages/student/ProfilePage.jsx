@@ -10,6 +10,10 @@ import api from '../../services/api';
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
   const location = useLocation();
+  
+  // Debug: Log user object to check profilePicture
+  console.log('User object:', user);
+  console.log('Profile picture:', user?.profilePicture);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
@@ -192,7 +196,7 @@ export default function ProfilePage() {
                 <div className="relative z-10 w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white shadow-xl shadow-gray-200 flex items-center justify-center overflow-hidden bg-[#003049]/5 flex-shrink-0 cursor-pointer group/avatar-main" onClick={() => user?.profilePicture && setShowLightbox(true)}>
                   {user?.profilePicture ? (
                     <div className="relative w-full h-full">
-                      <img src={`http://localhost:8080${user.profilePicture}`} alt="Profile" className="w-full h-full object-cover group-hover/avatar-main:scale-110 transition-transform duration-700" />
+                      <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:8080${user.profilePicture}`} alt="Profile" className="w-full h-full object-cover group-hover/avatar-main:scale-110 transition-transform duration-700" />
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/avatar-main:opacity-100 transition-opacity flex items-center justify-center">
                          <Maximize2 className="w-8 h-8 text-white drop-shadow-lg" />
                       </div>
@@ -327,7 +331,7 @@ export default function ProfilePage() {
               <X className="w-10 h-10" />
             </button>
             <img 
-              src={`http://localhost:8080${user.profilePicture}`} 
+              src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:8080${user.profilePicture}`} 
               alt="Profile" 
               className="max-w-full max-h-full rounded-3xl shadow-2xl object-contain animate-in zoom-in duration-500" 
               onClick={(e) => e.stopPropagation()}

@@ -53,7 +53,7 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
               className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center overflow-hidden hover:scale-105 transition-transform ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'}`}
             >
               {user?.profilePicture ? (
-                <img src={`http://localhost:8080${user.profilePicture}`} alt="" className="w-full h-full object-cover" />
+                <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:8080${user.profilePicture}`} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="font-bold text-[#003049]">{getInitial()}</span>
               )}
@@ -72,7 +72,7 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
                 className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center overflow-hidden mb-2 ${isAdmin ? 'border-[#D62828] bg-[#D62828]/10' : 'border-[#FCBF49] bg-[#FCBF49]/10'} hover:scale-105 transition-transform`}
               >
                 {user?.profilePicture ? (
-                  <img src={`http://localhost:8080${user.profilePicture}`} alt="" className="w-full h-full object-cover" />
+                  <img src={user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:8080${user.profilePicture}`} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <span className="font-bold text-[#003049]">{getInitial()}</span>
                 )}
