@@ -174,7 +174,7 @@ export default function TicketingDashboard() {
   }, [tickets]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-sans">
+    <div className="flex h-screen overflow-hidden bg-[#ffffff] font-sans">
       <Sidebar
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -197,18 +197,18 @@ export default function TicketingDashboard() {
               onTicketCreated={handleTicketCreated}
             />
           ) : (
-            <div className="min-h-full bg-[#003049] p-7">
+            <div className="min-h-full bg-[#fcfcfc] p-7">
               {/* Title Row */}
               <div className="flex items-start justify-between mb-5">
                 <div>
-                  <h1 className="text-[40px] font-bold text-white">Dashboard Summary</h1>
+                  <h1 className="text-[40px] font-bold text-[#003049]">Dashboard Summary</h1>
                   <p className="text-xs text-gray-400 mt-1">
                     Real-time operational overview for Building A & B
                   </p>
                 </div>
                 <button
                   onClick={() => setShowForm(true)}
-                  className="bg-orange-500 text-white px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-2 hover:bg-[#D62828]"
+                  className="bg-[#F77F00] text-white px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-2 hover:bg-[#D62828]"
                 >
                   + Create New Ticket
                 </button>
@@ -216,20 +216,20 @@ export default function TicketingDashboard() {
 
               {/* Stat Cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-[#FCBF49] rounded-xl p-4 border border-gray-200">
+                <div className="bg-[#fffbeb] rounded-xl p-4 border border-[#fde68a]">
                   <div className="w-8 h-8 bg-[#F77F00] text-blue-700 rounded-lg flex items-center justify-center mb-3">🎫</div>
                   <span className="text-[10px] font-semibold bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">OPEN</span>
                   <p className="text-sm text-gray-600 mt-2">Open Tickets</p>
                   <p className="text-3xl font-bold">{statusCounts.OPEN}</p>
                   <p className="text-xs text-gray-700">Waiting for action</p>
                 </div>
-                <div className="bg-[#F77F00] rounded-xl p-4 border border-gray-200">
+                <div className="bg-[#ecfdf5] rounded-xl p-4 border border-[#a7f3d0]">
                   <div className="w-8 h-8 bg-[#FCBF49] text-yellow-700 rounded-lg flex items-center justify-center mb-3">⏳</div>
                   <p className="text-sm text-gray-600">In Progress</p>
                   <p className="text-3xl font-bold">{statusCounts.IN_PROGRESS}</p>
                   <p className="text-xs text-yellow-700">Being worked on</p>
                 </div>
-                <div className="bg-[#D62828] rounded-xl p-4 border border-gray-200">
+                <div className="bg-[#fff1f2] rounded-xl p-4 border border-[#fdccd2]">
                   <div className="w-8 h-8 bg-[#003049] text-green-700 rounded-lg flex items-center justify-center mb-3">✅</div>
                   <p className="text-sm text-gray-600">Resolved</p>
                   <p className="text-3xl font-bold">{statusCounts.RESOLVED}</p>
@@ -278,7 +278,7 @@ export default function TicketingDashboard() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") navigate(`/tickets/${t.id}`);
                         }}
-                        className="bg-white rounded-xl p-4 flex items-center gap-3 border border-gray-200 text-left hover:border-blue-300 transition cursor-pointer"
+                        className="bg-white rounded-xl p-4 flex items-center gap-3 border border-gray-200 text-left hover:border-gray-400 transition cursor-pointer"
                       >
                         <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">🖥</div>
                         <div className="flex-1">
