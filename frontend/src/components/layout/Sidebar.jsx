@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/context/AuthContext';
-import { 
-  Building, Calendar, Wrench, Users, Shield, LogOut, 
-  LayoutDashboard, X, UserPlus, FileText, ClipboardList, Briefcase, HeadphonesIcon
+import {
+  Building, Calendar, Wrench, Users, Shield, LogOut,
+  LayoutDashboard, X, UserPlus, Briefcase, HeadphonesIcon
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -61,7 +61,9 @@ export default function Sidebar({
     <>
       {/* Overlay for Sidebar */}
       <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${
+          isMobileMenuOpen || isDesktopMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        } ${isMobileMenuOpen ? '' : 'pointer-events-none'}`}
         onClick={() => {
           setIsMobileMenuOpen(false);
           if (setIsDesktopMenuOpen) setIsDesktopMenuOpen(false);
@@ -121,27 +123,15 @@ export default function Sidebar({
             ) : (
               // Staff Conditional Layouts
               <>
-                {(role === 'LECTURER' || role === 'INSTRUCTOR') && (
-                  <>
-                    {renderNavButton(Calendar, 'My Bookings', 'my-bookings')}
-                    {renderNavButton(Building, 'Facility Schedule', 'facility-schedule')}
-                  </>
-                )}
                 {role === 'FACILITY_MANAGER' && (
                   <>
                     {renderNavButton(Briefcase, 'Asset Inventory', 'asset-inventory')}
                     {renderNavButton(Wrench, 'Maintenance', 'maintenance')}
                   </>
                 )}
-                {role === 'COORDINATOR' && (
-                  <>
-                    {renderNavButton(ClipboardList, 'Department Schedules', 'department-schedules')}
-                    {renderNavButton(FileText, 'Approvals', 'approvals')}
-                  </>
-                )}
                 {role === 'STUDENT_SUPPORT' && (
                   <>
-                    {renderNavButton(HeadphonesIcon, 'Helpdesk Tickets', 'helpdesk-tickets')}
+                    {renderNavButton(HeadphonesIcon, 'Technicians', 'helpdesk-tickets')}
                   </>
                 )}
               </>

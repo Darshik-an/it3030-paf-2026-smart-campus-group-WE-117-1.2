@@ -2,6 +2,8 @@ package com.example.backend.service.ticketing;
 
 import com.example.backend.model.auth.User;
 import com.example.backend.model.ticketing.Ticket;
+import com.example.backend.model.ticketing.TicketComment;
+import com.example.backend.repository.ticketing.TicketCommentRepository;
 import com.example.backend.repository.ticketing.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TicketService {
     private final TicketRepository ticketRepository;
+    private final HelpdeskTechnicianService technicianService;
+    private final TicketCommentRepository commentRepository;
 
     public List<Ticket> getUserTickets(User user) {
         return ticketRepository.findByUserOrderByCreatedAtDesc(user);
@@ -30,8 +34,140 @@ public class TicketService {
         return ticketRepository.findByIdAndUser(ticketId, user);
     }
 
+    public Optional<Ticket> getTicketById(Long ticketId) {
+        return ticketRepository.findById(ticketId);
+    }
+
+    public boolean canViewTicket(User user, Ticket ticket) {
+        if (user == null || ticket == null) return false;
+
+        if (user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.STUDENT_SUPPORT) {
+            return true;
+        }
+
+        if (ticket.getUser() != null && ticket.getUser().getId() != null
+                && user.getId() != null
+                && ticket.getUser().getId().equals(user.getId())) {
+            return true;
+        }
+
+        if (user.getRole() == User.Role.TECHNICIAN) {
+            String assigned = ticket.getAssignedTechnician();
+            if (assigned == null || assigned.isBlank()) return false;
+            String assignedKey = assigned.trim().toLowerCase(Locale.ROOT);
+            String nameKey = user.getName() != null ? user.getName().trim().toLowerCase(Locale.ROOT) : "";
+            String emailKey = user.getEmail() != null ? user.getEmail().trim().toLowerCase(Locale.ROOT) : "";
+            return (!nameKey.isBlank() && assignedKey.equals(nameKey))
+                    || (!emailKey.isBlank() && assignedKey.equals(emailKey));
+        }
+
+        return false;
+    }
+
+    public List<TicketComment> getCommentsForTicket(User user, Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+        if (!canViewTicket(user, ticket)) {
+            throw new IllegalArgumentException("Ticket not found");
+        }
+        return commentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+    }
+
+    public TicketComment addCommentToTicket(User user, Long ticketId, String message) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+        if (!canViewTicket(user, ticket)) {
+            throw new IllegalArgumentException("Ticket not found");
+        }
+        if (message == null || message.trim().isEmpty()) {
+            throw new IllegalArgumentException("Message is required");
+        }
+
+        TicketComment c = new TicketComment();
+        c.setTicket(ticket);
+        c.setAuthor(user);
+        c.setMessage(message.trim());
+        return commentRepository.save(c);
+    }
+
+    public void deleteMyComment(User user, Long ticketId, Long commentId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+        if (!canViewTicket(user, ticket)) {
+            throw new IllegalArgumentException("Ticket not found");
+        }
+
+        TicketComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        if (comment.getTicket() == null || comment.getTicket().getId() == null
+                || !comment.getTicket().getId().equals(ticketId)) {
+            throw new IllegalArgumentException("Comment not found");
+        }
+
+        if (comment.getAuthor() == null || comment.getAuthor().getId() == null
+                || user.getId() == null
+                || !comment.getAuthor().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("You can only delete your own comments.");
+        }
+
+        commentRepository.delete(comment);
+    }
+
     public List<Ticket> getAllTicketsForManagement() {
         return ticketRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<Ticket> getTicketsAssignedToTechnician(User technicianUser) {
+        String nameKey = technicianUser.getName() != null ? technicianUser.getName().trim().toLowerCase(Locale.ROOT) : "";
+        String emailKey = technicianUser.getEmail() != null ? technicianUser.getEmail().trim().toLowerCase(Locale.ROOT) : "";
+
+        return ticketRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(t -> t.getAssignedTechnician() != null && !t.getAssignedTechnician().isBlank())
+                .filter(t -> {
+                    String a = t.getAssignedTechnician().trim().toLowerCase(Locale.ROOT);
+                    return (!nameKey.isBlank() && a.equals(nameKey)) || (!emailKey.isBlank() && a.equals(emailKey));
+                })
+                .toList();
+    }
+
+    public Ticket updateTicketStatusByTechnician(User technicianUser, Long ticketId, String status) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        if (ticket.getAssignedTechnician() == null || ticket.getAssignedTechnician().isBlank()) {
+            throw new IllegalArgumentException("This ticket is not assigned to you.");
+        }
+
+        String nameKey = technicianUser.getName() != null ? technicianUser.getName().trim().toLowerCase(Locale.ROOT) : "";
+        String emailKey = technicianUser.getEmail() != null ? technicianUser.getEmail().trim().toLowerCase(Locale.ROOT) : "";
+        String assignedKey = ticket.getAssignedTechnician().trim().toLowerCase(Locale.ROOT);
+
+        boolean isMine = (!nameKey.isBlank() && assignedKey.equals(nameKey)) || (!emailKey.isBlank() && assignedKey.equals(emailKey));
+        if (!isMine) {
+            throw new IllegalArgumentException("This ticket is not assigned to you.");
+        }
+
+        if (status == null || status.isBlank()) {
+            throw new IllegalArgumentException("Status is required.");
+        }
+
+        String normalizedStatus = normalize(status);
+        Ticket.TicketStatus parsed;
+        try {
+            parsed = Ticket.TicketStatus.valueOf(normalizedStatus);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Invalid status. Use RESOLVED or CLOSED.");
+        }
+
+        if (parsed != Ticket.TicketStatus.RESOLVED && parsed != Ticket.TicketStatus.CLOSED) {
+            throw new IllegalArgumentException("Invalid status. Use RESOLVED or CLOSED.");
+        }
+
+        ticket.setStatus(parsed);
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
     }
 
     public Ticket createTicket(User user, String resource, String category, String priority, String description) {
@@ -67,7 +203,9 @@ public class TicketService {
         if (storedImages.size() > 1) ticket.setImage2(storedImages.get(1));
         if (storedImages.size() > 2) ticket.setImage3(storedImages.get(2));
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
     }
 
     public Ticket updateTicketByManagement(
@@ -94,15 +232,62 @@ public class TicketService {
         }
 
         if (ticket.getStatus() == Ticket.TicketStatus.REJECTED) {
-            if (isBlank(rejectionReason)) {
-                throw new IllegalArgumentException("Rejection reason is required when status is REJECTED");
-            }
-            ticket.setRejectionReason(rejectionReason.trim());
+            ticket.setRejectionReason(isBlank(rejectionReason) ? null : rejectionReason.trim());
         } else if (rejectionReason != null) {
             ticket.setRejectionReason(rejectionReason.trim().isEmpty() ? null : rejectionReason.trim());
         }
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
+    }
+
+    public void deleteTicketByManagement(Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+        ticketRepository.delete(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+    }
+
+    public Ticket updateMyOpenTicket(
+            User user,
+            Long ticketId,
+            String resource,
+            String category,
+            String priority,
+            String description
+    ) {
+        Ticket ticket = ticketRepository.findByIdAndUser(ticketId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        if (ticket.getStatus() != Ticket.TicketStatus.OPEN) {
+            throw new IllegalArgumentException("You can only edit tickets that are in OPEN status.");
+        }
+
+        if (isBlank(resource) || isBlank(category) || isBlank(priority) || isBlank(description)) {
+            throw new IllegalArgumentException("All fields are required");
+        }
+
+        ticket.setResource(resource.trim());
+        ticket.setCategory(parseCategory(category));
+        ticket.setPriority(parsePriority(priority));
+        ticket.setDescription(description.trim());
+
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
+    }
+
+    public void deleteMyOpenTicket(User user, Long ticketId) {
+        Ticket ticket = ticketRepository.findByIdAndUser(ticketId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        if (ticket.getStatus() != Ticket.TicketStatus.OPEN) {
+            throw new IllegalArgumentException("You can only delete tickets that are in OPEN status.");
+        }
+
+        ticketRepository.delete(ticket);
+        technicianService.syncActiveTicketsFromTickets();
     }
 
     private List<String> storeImages(List<MultipartFile> images) {

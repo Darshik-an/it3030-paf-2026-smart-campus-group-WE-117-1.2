@@ -18,6 +18,7 @@
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",
     "rollup": "npm:@rollup/wasm-node@^4.52.5"
+    "react-easy-crop": "5.0.6",
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -44,8 +44,7 @@ public class User implements UserDetails {
     private LocalDateTime lastLoggedIn;
 
     public enum Role {
-        USER, ADMIN, LECTURER, INSTRUCTOR, COORDINATOR,
-        STUDENT_SUPPORT, TECHNICIAN, FACILITY_MANAGER
+        USER, ADMIN, STUDENT_SUPPORT, TECHNICIAN, FACILITY_MANAGER
     }
 
     @Override

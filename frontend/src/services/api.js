@@ -6,8 +6,11 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// Automatically attach JWT token to every request
+// Automatically attach JWT token to every request, unless the caller
+// supplied an explicit Authorization header (e.g. a freshly-minted token
+// during the login flow that must not be clobbered by a stale one).
 api.interceptors.request.use((config) => {
+  if (config.headers?.Authorization) return config;
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -25,7 +28,12 @@ api.interceptors.response.use(
       
       if (!isLoginRequest && !isAuthPage) {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        const lastRole = localStorage.getItem('lastRole');
+        if (lastRole && lastRole !== 'USER') {
+          window.location.href = '/admin-login';
+        } else {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

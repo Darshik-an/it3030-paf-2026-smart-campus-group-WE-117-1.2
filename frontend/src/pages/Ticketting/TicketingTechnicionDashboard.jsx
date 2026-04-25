@@ -1,21 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { useAuth } from "../../features/auth/context/AuthContext";
 
 export default function TicketDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tickets, setTickets] = useState([]);
-  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [techError, setTechError] = useState("");
   const [savingId, setSavingId] = useState(null);
 
   const fetchTickets = async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await api.get("/api/tickets/manage");
+      const response = await api.get("/api/tickets/technician");
       setTickets(response.data || []);
     } catch (err) {
       const message = err.response?.data || "Failed to load ticket data.";
@@ -29,23 +29,6 @@ export default function TicketDashboard() {
     fetchTickets();
   }, []);
 
-  useEffect(() => {
-    const fetchTechnicians = async () => {
-      setTechError("");
-      try {
-        const response = await api.get("/api/helpdesk/technicians");
-        const list = Array.isArray(response.data) ? response.data : [];
-        setTechnicians(list);
-      } catch (err) {
-        const message = err.response?.data || "Failed to load technicians.";
-        setTechError(typeof message === "string" ? message : "Failed to load technicians.");
-        setTechnicians([]);
-      }
-    };
-
-    fetchTechnicians();
-  }, []);
-
   const stats = useMemo(() => {
     const open = tickets.filter((t) => t.status === "OPEN").length;
     const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
@@ -57,28 +40,12 @@ export default function TicketDashboard() {
   const updateTicket = async (ticketId, payload) => {
     setSavingId(ticketId);
     try {
-      const response = await api.patch(`/api/tickets/manage/${ticketId}`, payload);
+      const response = await api.patch(`/api/tickets/technician/${ticketId}`, payload);
       const updated = response.data;
       setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
     } catch (err) {
       const message = err.response?.data || "Failed to update ticket.";
       alert(typeof message === "string" ? message : "Failed to update ticket.");
-    } finally {
-      setSavingId(null);
-    }
-  };
-
-  const deleteTicket = async (ticketId) => {
-    if (!window.confirm(`Delete ticket #${ticketId}? This action cannot be undone.`)) {
-      return;
-    }
-    setSavingId(ticketId);
-    try {
-      await api.delete(`/api/tickets/manage/${ticketId}`);
-      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-    } catch (err) {
-      const message = err.response?.data || "Failed to delete ticket.";
-      alert(typeof message === "string" ? message : "Failed to delete ticket.");
     } finally {
       setSavingId(null);
     }
@@ -97,7 +64,7 @@ export default function TicketDashboard() {
     if (status === "IN_PROGRESS") return "bg-blue-100 text-blue-700";
     if (status === "RESOLVED") return "bg-green-100 text-green-700";
     if (status === "CLOSED") return "bg-gray-200 text-gray-700";
-    return "bg-red-100 text-red-700";
+    return "bg-gray-100 text-gray-600";
   };
 
   return (
@@ -140,19 +107,22 @@ export default function TicketDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">Active Tickets</h2>
+            <h2 className="text-lg font-semibold">
+              My Assigned Tickets
+              {user?.name ? <span className="ml-2 text-xs text-gray-500">({user.name})</span> : null}
+            </h2>
             <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
               {stats.total} TOTAL
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={fetchTickets} className="bg-gray-200 px-3 py-1 rounded text-sm">Refresh</button>
-          </div>
+          <button
+            onClick={fetchTickets}
+            className="bg-gray-200 px-3 py-1 rounded text-sm"
+          >
+            Refresh
+          </button>
         </div>
-        {techError && (
-          <div className="px-5 py-3 text-sm text-red-600 border-b">{techError}</div>
-        )}
 
         {/* Table */}
         <div>
@@ -170,6 +140,7 @@ export default function TicketDashboard() {
           {loading && (
             <div className="px-5 py-4 text-sm text-gray-500">Loading tickets...</div>
           )}
+
           {error && (
             <div className="px-5 py-4 text-sm text-red-600">{error}</div>
           )}
@@ -178,108 +149,51 @@ export default function TicketDashboard() {
           {!loading && !error && tickets.map((t) => (
             <div
               key={t.id}
-              role="button"
-              tabIndex={0}
               onClick={() => navigate(`/tickets/${t.id}`)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") navigate(`/tickets/${t.id}`);
-              }}
               className="grid grid-cols-6 items-center px-5 py-4 border-b hover:bg-gray-50 cursor-pointer"
             >
 
               {/* ID */}
-              <button
-                type="button"
-                onClick={() => navigate(`/tickets/${t.id}`)}
-                className="font-semibold text-left text-blue-700 hover:underline"
-              >
-                #{t.id}
-              </button>
+              <div className="font-semibold text-blue-700">#{t.id}</div>
 
               {/* Issue */}
               <div>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/tickets/${t.id}`)}
-                  className="font-semibold text-sm text-left hover:underline"
-                >
-                  {t.resource}
-                </button>
+                <p className="font-semibold text-sm">{t.resource}</p>
                 <p className="text-xs text-gray-500">{t.description}</p>
               </div>
 
               {/* Resource */}
-              <div className="text-sm">{t.reporterName || t.reporterEmail || "-"}</div>
+              <div className="text-sm">
+                {t.reporterName || t.reporterEmail || "-"}
+              </div>
 
               {/* Priority */}
               <div>
-                <span
-                  className={`text-xs px-2 py-1 rounded-full font-semibold ${priorityClass(t.priority)}`}
-                >
+                <span className={`text-xs px-2 py-1 rounded-full font-semibold ${priorityClass(t.priority)}`}>
                   {t.priority}
                 </span>
               </div>
 
               {/* Status */}
-              <div className="space-y-2">
-                <span
-                  className={`text-xs px-3 py-1 rounded-full font-semibold ${statusClass(t.status)}`}
-                >
+              <div onClick={(e) => e.stopPropagation()}>
+                <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusClass(t.status)}`}>
                   {formatStatus(t.status)}
                 </span>
+
                 <select
-                  className="block border rounded px-2 py-1 text-xs"
+                  className="block border rounded px-2 py-1 text-xs mt-2"
                   value={t.status}
-                  onClick={(e) => e.stopPropagation()}
                   onChange={(e) => updateTicket(t.id, { status: e.target.value })}
                   disabled={savingId === t.id}
                 >
-                  <option value="OPEN">OPEN</option>
-                  <option value="IN_PROGRESS">IN PROGRESS</option>
                   <option value="RESOLVED">RESOLVED</option>
                   <option value="CLOSED">CLOSED</option>
-                  <option value="REJECTED">REJECTED</option>
                 </select>
               </div>
 
-              {/* Tech */}
-              <div className="space-y-2">
-                <select
-                  className="w-full border rounded px-2 py-1 text-xs"
-                  value={t.assignedTechnician || ""}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => updateTicket(t.id, { assignedTechnician: e.target.value })}
-                  disabled={savingId === t.id}
-                >
-                  <option value="">Unassigned</option>
-                  {technicians.map((tech) => (
-                    <option key={tech.id} value={tech.email}>
-                      {tech.name} ({tech.techId})
-                    </option>
-                  ))}
-                </select>
-                <div className="flex items-center gap-2">
-                  <button
-                    className="text-xs px-2 py-1 rounded bg-red-100 text-red-700"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateTicket(t.id, { status: "REJECTED" });
-                    }}
-                    disabled={savingId === t.id}
-                  >
-                    Reject
-                  </button>
-                  <button
-                    className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteTicket(t.id);
-                    }}
-                    disabled={savingId === t.id}
-                  >
-                    Delete
-                  </button>
-                </div>
+              {/* Assigned Tech (Read Only) */}
+              <div className="text-sm">
+                {t.assignedTechnician || "Unassigned"}
               </div>
 
             </div>
@@ -287,10 +201,9 @@ export default function TicketDashboard() {
 
         </div>
 
-        {/* Pagination */}
+        {/* Footer */}
         <div className="flex justify-between items-center p-5 text-sm text-gray-500">
           <p>Showing {tickets.length} ticket(s)</p>
-
           <div className="flex gap-2">
             <button className="px-3 py-1 bg-[#4a1d00] text-white rounded">1</button>
           </div>
