@@ -341,14 +341,14 @@ export default function TicketDetailsPage() {
         <div className="col-span-2 space-y-6">
 
           {/* Technician Log */}
-          <div className="bg-[#5a2500] text-white p-5 rounded-xl">
+          <div className="bg-[#fffbeb] border border-[#fde68a] text-orange-500 p-5 rounded-xl">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-orange-300 text-black px-3 py-1 rounded-lg font-bold">
                 {technicianInitials}
               </div>
               <div>
                 <p className="font-semibold">Technician Log: {technicianName}</p>
-                <p className="text-xs text-orange-200">
+                <p className="text-xs text-orange-400">
                   {technicianRole}
                 </p>
               </div>
@@ -393,8 +393,8 @@ export default function TicketDetailsPage() {
                         {initials}
                       </div>
                     )}
-                    <div className={isMine ? "bg-[#5a2500] text-white p-3 rounded-lg text-sm max-w-md" : "bg-white p-3 rounded-lg text-sm max-w-md"}>
-                      <div className={isMine ? "text-[11px] text-orange-200 flex items-center justify-between gap-3 mb-1" : "text-[11px] text-gray-500 flex items-center justify-between gap-3 mb-1"}>
+                    <div className={isMine ? "bg-[#fffbeb] border border-[#fde68a] text-orange-500 p-3 rounded-lg text-sm max-w-md" : "bg-white p-3 rounded-lg text-sm max-w-md"}>
+                      <div className={isMine ? "text-[11px] text-orange-400 flex items-center justify-between gap-3 mb-1" : "text-[11px] text-gray-500 flex items-center justify-between gap-3 mb-1"}>
                         <span className="truncate">
                           {(c.authorName || c.authorEmail || "User")} • {roleLabel(c.authorRole)}
                         </span>
@@ -405,7 +405,7 @@ export default function TicketDetailsPage() {
                         <div className="mt-2 flex justify-end">
                           <button
                             type="button"
-                            className="text-[11px] px-2 py-1 rounded bg-black/20 hover:bg-black/30"
+                            className="text-[11px] text-[#fffbeb] px-2 py-1 rounded bg-orange-300 hover:bg-orange-500"
                             onClick={() => deleteComment(c.id)}
                             disabled={deletingId === c.id}
                           >

@@ -127,8 +127,8 @@ export default function TicketDashboard() {
         <div className="bg-white rounded-xl p-5 border-l-4 border-[#D62828] shadow-sm">
           <p className="text-sm font-semibold mb-2">CLOSED TICKET</p>
           <h2 className="text-3xl font-bold">{stats.closed}</h2>
-          <p className="text-xs text-gray-300 mt-2">
-            All systems stable. Maintenance at 02:00 AM.
+          <p className="text-sm text-gray-400 mt-2">
+            Closed from ticket queue
           </p>
         </div>
 
