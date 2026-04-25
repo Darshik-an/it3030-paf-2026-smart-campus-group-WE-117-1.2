@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../features/auth/context/AuthContext';
-import Navbar from '../components/layout/Navbar';
-import Sidebar from '../components/layout/Sidebar';
+import { useAuth } from '../../features/auth/context/AuthContext';
+import Navbar from '../../components/layout/Navbar';
+import Sidebar from '../../components/layout/Sidebar';
 import { Mail, Calendar, Shield, Clock, UserCircle, Key, Edit2, Trash2, X, Maximize2, Loader2, Check } from 'lucide-react';
-import AvatarUploader from '../features/auth/components/AvatarUploader';
-import api from '../services/api';
+import AvatarUploader from '../../features/auth/components/AvatarUploader';
+import api from '../../services/api';
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
