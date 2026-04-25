@@ -1,13 +1,8 @@
-import React, { useState, useCallback, Suspense } from 'react';
-import { X, ZoomIn, ZoomOut, Upload, Loader2, Check, Scissors, AlertCircle } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
+import { X, ZoomIn, ZoomOut, Upload, Loader2, Check, Scissors } from 'lucide-react';
 import api from '../../../services/api';
 import { useAuth } from '../context/AuthContext';
-
-// Lazy load Cropper to prevent initial load issues
-const Cropper = React.lazy(() => import('react-easy-crop').catch(() => {
-  // Fallback if react-easy-crop fails to load
-  return { default: () => null };
-}));
 
 /**
  * Helper to process the crop into a Blob.
@@ -53,7 +48,6 @@ export default function AvatarUploader({ onClose }) {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
-  const [cropperError, setCropperError] = useState(false);
 
   const onSelectFile = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -67,23 +61,14 @@ export default function AvatarUploader({ onClose }) {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const handleUpload = async (skipCrop = false) => {
+  const handleUpload = async () => {
     try {
       setUploading(true);
       setError('');
-      
-      let blob;
-      if (skipCrop || cropperError) {
-        // Fallback: upload original image without cropping
-        const response = await fetch(image);
-        blob = await response.blob();
-      } else {
-        // Normal cropped upload
-        blob = await getCroppedImg(image, croppedAreaPixels);
-      }
+      const croppedBlob = await getCroppedImg(image, croppedAreaPixels);
       
       const formData = new FormData();
-      formData.append('file', blob, 'avatar.jpg');
+      formData.append('file', croppedBlob, 'avatar.jpg');
 
       const response = await api.post('/api/auth/profile/picture', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -96,10 +81,6 @@ export default function AvatarUploader({ onClose }) {
     } finally {
       setUploading(false);
     }
-  };
-
-  const handleFallbackUpload = async () => {
-    await handleUpload(true);
   };
 
   return (
@@ -133,33 +114,15 @@ export default function AvatarUploader({ onClose }) {
           <div className="flex flex-col h-[500px]">
             {/* Cropper Container */}
             <div className="relative flex-1 bg-gray-900">
-              <Suspense fallback={
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="w-8 h-8 text-white animate-spin" />
-                </div>
-              }>
-                {cropperError ? (
-                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                    <AlertCircle className="w-12 h-12 text-yellow-400 mb-4" />
-                    <p className="text-white mb-4">Image editor unavailable</p>
-                    <p className="text-gray-400 text-sm mb-6">You can still upload the original image</p>
-                    <div className="w-32 h-32 rounded-full overflow-hidden mb-4">
-                      <img src={image} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                ) : (
-                  <Cropper
-                    image={image}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={setCrop}
-                    onCropComplete={onCropComplete}
-                    onZoomChange={setZoom}
-                    onError={() => setCropperError(true)}
-                  />
-                )}
-              </Suspense>
+              <Cropper
+                image={image}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+              />
             </div>
 
             {/* Controls */}
@@ -170,22 +133,20 @@ export default function AvatarUploader({ onClose }) {
                 </div>
               )}
 
-              {!cropperError && (
-                <div className="flex items-center gap-4">
-                  <ZoomOut className="w-5 h-5 text-gray-400" />
-                  <input
-                    type="range"
-                    value={zoom}
-                    min={1}
-                    max={3}
-                    step={0.1}
-                    aria-labelledby="Zoom"
-                    onChange={(e) => setZoom(e.target.value)}
-                    className="flex-1 accent-[#F77F00]"
-                  />
-                  <ZoomIn className="w-5 h-5 text-gray-400" />
-                </div>
-              )}
+              <div className="flex items-center gap-4">
+                <ZoomOut className="w-5 h-5 text-gray-400" />
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => setZoom(e.target.value)}
+                  className="flex-1 accent-[#F77F00]"
+                />
+                <ZoomIn className="w-5 h-5 text-gray-400" />
+              </div>
 
               <div className="flex items-center justify-end gap-4">
                 <button
@@ -194,31 +155,17 @@ export default function AvatarUploader({ onClose }) {
                 >
                   Change Photo
                 </button>
-                {cropperError ? (
-                  <button
-                    onClick={handleFallbackUpload}
-                    disabled={uploading}
-                    className="bg-[#F77F00] text-white px-8 py-3 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#F77F00]/20 flex items-center gap-2 disabled:opacity-50"
-                  >
-                    {uploading ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</>
-                    ) : (
-                      <><Check className="w-5 h-5" /> Upload Original</>
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleUpload}
-                    disabled={uploading}
-                    className="bg-[#003049] text-white px-8 py-3 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#003049]/20 flex items-center gap-2 disabled:opacity-50"
-                  >
-                    {uploading ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</>
-                    ) : (
-                      <><Check className="w-5 h-5" /> Save Changes</>
-                    )}
-                  </button>
-                )}
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="bg-[#003049] text-white px-8 py-3 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#003049]/20 flex items-center gap-2 disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Check className="w-5 h-5" /> Save Changes</>
+                  )}
+                </button>
               </div>
             </div>
           </div>
