@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, LogOut, Settings, UserCircle, Shield, ChevronDown } from 'lucide-react';
@@ -8,6 +8,7 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
+  const [showWelcome, setShowWelcome] = useState(!isAdmin);
 
   const getInitial = () => {
     return user?.name?.charAt(0).toUpperCase() || 'U';
@@ -18,9 +19,25 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
     navigate('/login');
   };
 
+  useEffect(() => {
+    setShowWelcome(!isAdmin);
+    if (isAdmin) return undefined;
+
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+    }, 60000);
+
+    return () => clearTimeout(timer);
+  }, [isAdmin, user?.id]);
+
+  const getFirstName = () => {
+    if (!user?.name) return 'User';
+    return user.name.split(' ')[0];
+  };
+
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-20 flex items-center justify-between px-4 md:px-10 flex-shrink-0 z-30">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 min-w-0">
         {setIsMobileMenuOpen && (
           <button 
             onClick={() => setIsMobileMenuOpen(true)} 
@@ -30,9 +47,16 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
             <Menu className="w-6 h-6" />
           </button>
         )}
-        <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#003049]">
-          SmartCampus<span className="text-[#F77F00]">Hub</span>
-        </h2>
+        <div className="min-w-0">
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#003049] leading-tight">
+            SmartCampus<span className="text-[#F77F00]">Hub</span>
+          </h2>
+          {showWelcome && !isAdmin && (
+            <p className="text-[11px] md:text-xs font-bold text-[#003049]/80 truncate">
+              Hello! Welcome back {getFirstName()}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-4 md:gap-8">
