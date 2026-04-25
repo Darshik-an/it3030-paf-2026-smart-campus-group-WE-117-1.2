@@ -19,7 +19,13 @@ export default function ProtectedRoute({ children, requiredRole }) {
     );
   }
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user) {
+    const lastRole = localStorage.getItem('lastRole');
+    if (lastRole && lastRole !== 'USER') {
+      return <Navigate to="/admin-login" />;
+    }
+    return <Navigate to="/login" />;
+  }
 
   if (requiredRole && user.role !== requiredRole) {
     return (
