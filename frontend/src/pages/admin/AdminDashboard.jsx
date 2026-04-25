@@ -11,6 +11,7 @@ import { AdminBookings } from '../../features/bookings';
 import TicketAdminDashboard from '../Ticketting/TicketAdminDashboard';
 import TicketingTechnicionDashboard from '../Ticketting/TicketingTechnicionDashboard';
 import TechniciansList from '../Ticketting/TechniciansList';
+import Resources from '../Resources';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -26,7 +27,9 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : 'dashboard');
   
   useEffect(() => {
-    if (location.pathname === '/dashboard') {
+    if (location.pathname === '/dashboard/facilities') {
+      setActiveTab('facilities');
+    } else if (location.pathname === '/dashboard') {
       setActiveTab(isAdmin ? 'staff' : 'dashboard');
     }
   }, [location.pathname, isAdmin]);
@@ -78,6 +81,7 @@ export default function AdminDashboard() {
           {activeTab === 'settings' && isAdmin && <SystemSettings />}
           {activeTab === 'bookings' && isAdmin && <AdminBookings />}
           {activeTab === 'helpdesk-tickets' && <TechniciansList />}
+          {activeTab === 'facilities' && <Resources />}
         </div>
       </main>
     </div>

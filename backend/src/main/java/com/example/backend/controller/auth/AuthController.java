@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,16 +52,22 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid email or password"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid email or password"));
+        }
 
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         user.setLastLoggedIn(java.time.LocalDateTime.now());
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getEmail());
-        
+
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         return ResponseEntity.ok(response);
