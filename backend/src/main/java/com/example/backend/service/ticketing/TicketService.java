@@ -249,6 +249,47 @@ public class TicketService {
         technicianService.syncActiveTicketsFromTickets();
     }
 
+    public Ticket updateMyOpenTicket(
+            User user,
+            Long ticketId,
+            String resource,
+            String category,
+            String priority,
+            String description
+    ) {
+        Ticket ticket = ticketRepository.findByIdAndUser(ticketId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        if (ticket.getStatus() != Ticket.TicketStatus.OPEN) {
+            throw new IllegalArgumentException("You can only edit tickets that are in OPEN status.");
+        }
+
+        if (isBlank(resource) || isBlank(category) || isBlank(priority) || isBlank(description)) {
+            throw new IllegalArgumentException("All fields are required");
+        }
+
+        ticket.setResource(resource.trim());
+        ticket.setCategory(parseCategory(category));
+        ticket.setPriority(parsePriority(priority));
+        ticket.setDescription(description.trim());
+
+        Ticket saved = ticketRepository.save(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+        return saved;
+    }
+
+    public void deleteMyOpenTicket(User user, Long ticketId) {
+        Ticket ticket = ticketRepository.findByIdAndUser(ticketId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        if (ticket.getStatus() != Ticket.TicketStatus.OPEN) {
+            throw new IllegalArgumentException("You can only delete tickets that are in OPEN status.");
+        }
+
+        ticketRepository.delete(ticket);
+        technicianService.syncActiveTicketsFromTickets();
+    }
+
     private List<String> storeImages(List<MultipartFile> images) {
         if (images == null || images.isEmpty()) return List.of();
 
