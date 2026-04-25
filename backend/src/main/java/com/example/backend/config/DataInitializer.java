@@ -34,6 +34,10 @@ public class DataInitializer {
         return args -> {
             dropLegacyTechnicianActiveTicketsTable();
             purgeRetiredRoleUsers();
+            repairSeedUserCredentialsIfLegacy(ADMIN_EMAIL, ADMIN_PASSWORD, User.Role.ADMIN);
+            repairSeedUserCredentialsIfLegacy("fmanager@campus.lk", "Manager@123", User.Role.FACILITY_MANAGER);
+            repairSeedUserCredentialsIfLegacy("support@campus.lk", "Support@123", User.Role.STUDENT_SUPPORT);
+            repairSeedUserCredentialsIfLegacy("tech@campus.lk", "Tech@123", User.Role.TECHNICIAN);
             seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
             seedUserIfNotExists("fmanager@campus.lk", "Bandara lokuge", "Manager@123", User.Role.FACILITY_MANAGER);
             seedUserIfNotExists("support@campus.lk", "Kumari Perera", "Support@123", User.Role.STUDENT_SUPPORT);
@@ -106,6 +110,27 @@ public class DataInitializer {
         });
     }
 
+    private void repairSeedUserCredentialsIfLegacy(String email, String expectedPassword, User.Role expectedRole) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.getRole() != expectedRole) {
+                return;
+            }
+            String storedPassword = user.getPassword();
+            if (storedPassword == null || storedPassword.isBlank()) {
+                return;
+            }
+            if (looksLikeBcrypt(storedPassword)) {
+                return;
+            }
+            if (!storedPassword.equals(expectedPassword)) {
+                return;
+            }
+            user.setPassword(passwordEncoder.encode(expectedPassword));
+            userRepository.save(user);
+            log.info("Upgraded legacy plain-text password for seed user {}", email);
+        });
+    }
+
     private static HelpdeskTechnician helpdeskTech(
             String name, String email, String phone, String category, String specialization
     ) {
@@ -137,5 +162,11 @@ public class DataInitializer {
         } catch (Exception ex) {
             log.warn("Skipping seed for {} because DB rejected role '{}': {}", email, role.name(), ex.getMessage());
         }
+    }
+
+    private boolean looksLikeBcrypt(String password) {
+        return password.startsWith("$2a$")
+                || password.startsWith("$2b$")
+                || password.startsWith("$2y$");
     }
 }
