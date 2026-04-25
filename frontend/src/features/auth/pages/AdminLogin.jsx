@@ -75,7 +75,7 @@ export default function AdminLogin() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@smartcampus.edu"
+              placeholder="admin@campus.lk"
               className="w-full px-5 py-3.5 rounded-xl border border-gray-200 text-sm transition-all focus:border-[#D62828] focus:ring-4 focus:ring-[#D62828]/10 outline-none font-medium"
               required
             />
