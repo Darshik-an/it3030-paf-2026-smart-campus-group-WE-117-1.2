@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit, Trash2, MapPin, Users, ArrowRight, Wifi, Monitor, FlaskConical, BookOpen, Wrench, CheckCircle2, XCircle } from "lucide-react";
+import { Edit, Trash2, MapPin, Users, ArrowRight, Wifi, Monitor, FlaskConical, BookOpen, Mic, CheckCircle2, XCircle } from "lucide-react";
 
 const typeConfig = {
   LECTURE_HALL: {
@@ -29,9 +29,9 @@ const typeConfig = {
     border: "border-teal-100",
     badge: "bg-teal-100 text-teal-700",
   },
-  EQUIPMENT: {
-    label: "Equipment",
-    icon: Wrench,
+  AUDITORIUM: {
+    label: "Auditorium",
+    icon: Mic,
     gradient: "from-amber-500 to-orange-500",
     bg: "bg-amber-50",
     text: "text-amber-700",

@@ -31,23 +31,23 @@ export const mockResources = [
   },
   {
     id: 4,
-    name: "Projector",
-    type: "EQUIPMENT",
-    capacity: 1,
-    location: "Equipment Store",
+    name: "Main Auditorium",
+    type: "AUDITORIUM",
+    capacity: 500,
+    location: "Building D - Ground Floor",
     status: "ACTIVE",
     availability: "Available on request",
-    description: "4K projector with HDMI connectivity"
+    description: "Large auditorium for major events and conferences"
   },
   {
     id: 5,
-    name: "Camera",
-    type: "EQUIPMENT",
-    capacity: 1,
-    location: "Equipment Store",
+    name: "Mini Auditorium",
+    type: "AUDITORIUM",
+    capacity: 200,
+    location: "Building D - Floor 1",
     status: "ACTIVE",
     availability: "Available on request",
-    description: "Professional video camera"
+    description: "Smaller auditorium for departmental events"
   },
   {
     id: 6,

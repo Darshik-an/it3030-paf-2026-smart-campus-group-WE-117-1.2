@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../../services/api';
 
 const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResourceId = null }) => {
   // Mock resources for dropdown
@@ -6,17 +7,53 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
     { id: 1, name: 'Meeting Room A', type: 'MEETING_ROOM', capacity: 10, location: 'Building 1, 2nd Floor' },
     { id: 2, name: 'Lab 101', type: 'LAB', capacity: 25, location: 'Science Building, 1st Floor' },
     { id: 3, name: 'Lecture Hall 1', type: 'LECTURE_HALL', capacity: 100, location: 'Main Hall' },
-    { id: 4, name: 'Equipment Set A', type: 'EQUIPMENT', capacity: 5, location: 'Workshop' },
+    { id: 4, name: 'Equipment Set A', type: 'AUDITORIUM', capacity: 5, location: 'Workshop' },
     { id: 5, name: 'Meeting Room B', type: 'MEETING_ROOM', capacity: 15, location: 'Building 2, 3rd Floor' },
     { id: 6, name: 'Lab 102', type: 'LAB', capacity: 20, location: 'Science Building, 2nd Floor' }
   ];
 
   const [availableResources, setAvailableResources] = useState([]);
 
+  const [isChecking, setIsChecking] = useState(false);
+
   useEffect(() => {
-    // Use mock resources if no resources are provided from API
-    setAvailableResources(resources.length > 0 ? resources : mockResources);
-  }, [resources]);
+    const checkAvailability = async () => {
+      if (formData.bookingDate && formData.startTime && formData.endTime && formData.startTime < formData.endTime) {
+        setIsChecking(true);
+        try {
+          const availableList = [];
+          const sourceResources = resources.length > 0 ? resources : mockResources;
+          for (const resource of sourceResources) {
+            const res = await api.get('/api/bookings/check-conflict', {
+              params: {
+                resourceId: resource.id,
+                date: formData.bookingDate,
+                startTime: formData.startTime,
+                endTime: formData.endTime
+              }
+            });
+            if (!res.data.hasConflict) {
+              availableList.push(resource);
+            }
+          }
+          setAvailableResources(availableList);
+          
+          if (formData.resourceId && !availableList.find(r => r.id === Number(formData.resourceId))) {
+            setFormData(prev => ({ ...prev, resourceId: '' }));
+          }
+        } catch (error) {
+          console.error("Error checking availability:", error);
+          setAvailableResources(resources.length > 0 ? resources : mockResources);
+        } finally {
+          setIsChecking(false);
+        }
+      } else {
+        setAvailableResources(resources.length > 0 ? resources : mockResources);
+      }
+    };
+    
+    checkAvailability();
+  }, [formData.bookingDate, formData.startTime, formData.endTime, resources]);
   const [formData, setFormData] = useState({
     resourceId: initialResourceId || '',
     bookingDate: '',
@@ -101,10 +138,10 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
               errors.resourceId ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
             }`}
           >
-            <option value="">Select a resource</option>
+            <option value="">{isChecking ? 'Checking availability...' : 'Select a resource'}</option>
             {availableResources.map(resource => (
               <option key={resource.id} value={resource.id}>
-                {resource.name} ({resource.type}) - Capacity: {resource.capacity}
+                [ID: {resource.id}] {resource.name} ({resource.type}) - Capacity: {resource.capacity}
               </option>
             ))}
           </select>

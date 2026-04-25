@@ -5,7 +5,7 @@ const typeOptions = [
   { value: "LECTURE_HALL", label: "Lecture Hall" },
   { value: "LAB", label: "Lab" },
   { value: "MEETING_ROOM", label: "Meeting Room" },
-  { value: "EQUIPMENT", label: "Equipment" },
+  { value: "AUDITORIUM", label: "Auditorium" },
 ];
 const statusOptions = [
   { value: "ACTIVE", label: "Active" },
@@ -36,8 +36,8 @@ const ResourceForm = ({ resource, onClose, onSubmit }) => {
       setError("All fields are required.");
       return;
     }
-    if (form.capacity < 1) {
-      setError("Capacity must be at least 1.");
+    if (isNaN(form.capacity) || form.capacity < 1) {
+      setError("Capacity must be a valid number and at least 1.");
       return;
     }
     setError(null);
