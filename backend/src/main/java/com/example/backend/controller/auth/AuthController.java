@@ -28,6 +28,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final com.example.backend.service.FileStorageService fileStorageService;
     private final com.example.backend.repository.ticketing.TicketRepository ticketRepository;
+    private final com.example.backend.repository.booking.BookingRepository bookingRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -167,6 +168,9 @@ public class AuthController {
         if (user.getProfilePicture() != null) {
             fileStorageService.deleteFile(user.getProfilePicture());
         }
+
+        // Cleanup user-owned bookings (FK on bookings.user_id blocks user delete otherwise)
+        bookingRepository.deleteByUser(user);
 
         // Cleanup user tickets
         ticketRepository.deleteByUser(user);

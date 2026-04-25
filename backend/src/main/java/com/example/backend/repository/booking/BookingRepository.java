@@ -17,6 +17,8 @@ import com.example.backend.model.booking.Booking;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUser(User user);
 
+    void deleteByUser(User user);
+
     Optional<Booking> findByAttendanceCode(String attendanceCode);
 
     List<Booking> findByUserAndStatus(User user, Booking.BookingStatus status);
