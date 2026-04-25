@@ -3,20 +3,25 @@ package com.example.backend.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.backend.model.Resource;
 import com.example.backend.model.ResourceType;
 import com.example.backend.repository.ResourceRepository;
+import com.example.backend.service.notification.NotificationService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ResourceService {
-    @Autowired
-    private ResourceRepository resourceRepository;
+    private final ResourceRepository resourceRepository;
+    private final NotificationService notificationService;
 
     public Resource createResource(Resource resource) {
-        return resourceRepository.save(resource);
+        Resource created = resourceRepository.save(resource);
+        notificationService.onResourceCreated(created);
+        return created;
     }
 
     public List<Resource> getAllResources() {
@@ -36,12 +41,15 @@ public class ResourceService {
         resource.setLocation(updatedResource.getLocation());
         resource.setStatus(updatedResource.getStatus());
         resource.setDescription(updatedResource.getDescription());
-        return resourceRepository.save(resource);
+        Resource saved = resourceRepository.save(resource);
+        notificationService.onResourceUpdated(saved);
+        return saved;
     }
 
     public void deleteResource(Long id) {
         Resource resource = getResourceById(id);
         resourceRepository.delete(resource);
+        notificationService.onResourceDeleted(resource);
     }
 
     public List<Resource> searchResources(ResourceType type, Integer capacity, String location) {
