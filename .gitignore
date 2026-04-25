@@ -1,8 +1,0 @@
-# Environment files (local DB credentials)
-.env
-*.env
-**/.env
-backend/src/main/java/com/example/backend/.env
-
-backend/src/main/resources/application.properties
-backend/uploads/
