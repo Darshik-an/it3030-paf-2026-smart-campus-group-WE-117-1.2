@@ -25,7 +25,7 @@ public class ResourceController {
     @Autowired
     private ResourceService resourceService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FACILITY_MANAGER')")
     @PostMapping
     public ResponseEntity<Resource> createResource(@RequestBody Resource resource) {
         Resource created = resourceService.createResource(resource);
@@ -44,13 +44,13 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.getResourceById(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FACILITY_MANAGER')")
     @PutMapping("/{id}")
     public ResponseEntity<Resource> updateResource(@PathVariable Long id, @RequestBody Resource resource) {
         return ResponseEntity.ok(resourceService.updateResource(id, resource));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FACILITY_MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
         resourceService.deleteResource(id);
