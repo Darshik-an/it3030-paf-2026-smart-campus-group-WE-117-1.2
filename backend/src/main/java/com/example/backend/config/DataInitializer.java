@@ -34,7 +34,7 @@ public class DataInitializer {
         return args -> {
             dropLegacyTechnicianActiveTicketsTable();
             purgeRetiredRoleUsers();
-            seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
+            seedOrUpdateAdmin(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
             seedUserIfNotExists("fmanager@campus.lk", "Bandara lokuge", "Manager@123", User.Role.FACILITY_MANAGER);
             seedUserIfNotExists("support@campus.lk", "Kumari Perera", "Support@123", User.Role.STUDENT_SUPPORT);
             seedUserIfNotExists("tech@campus.lk", "Saman Kumara", "Tech@123", User.Role.TECHNICIAN);
@@ -116,6 +116,24 @@ public class DataInitializer {
         t.setCategory(category);
         t.setSpecialization(specialization);
         return t;
+    }
+
+    private void seedOrUpdateAdmin(String email, String name, String password, User.Role role) {
+        try {
+            User user = userRepository.findByEmail(email)
+                    .orElse(new User());
+            
+            user.setEmail(email);
+            user.setName(name);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setRole(role);
+            user.setLastLoggedIn(LocalDateTime.now());
+            userRepository.save(user);
+
+            log.info("{} user updated: {} / {}", role.name(), email, password);
+        } catch (Exception ex) {
+            log.warn("Skipping admin update for {} because DB rejected role '{}': {}", email, role.name(), ex.getMessage());
+        }
     }
 
     private void seedUserIfNotExists(String email, String name, String password, User.Role role) {
