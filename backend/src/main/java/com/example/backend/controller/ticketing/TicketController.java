@@ -226,6 +226,56 @@ public class TicketController {
         }
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateMyTicket(
+            @PathVariable Long id,
+            @RequestBody UpdateTicketStudentRequest request
+    ) {
+        try {
+            User user = getCurrentUser();
+            if (user.getRole() != User.Role.USER) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            Ticket updated = ticketService.updateMyOpenTicket(
+                    user,
+                    id,
+                    request.getResource(),
+                    request.getCategory(),
+                    request.getPriority(),
+                    request.getDescription()
+            );
+            return ResponseEntity.ok(TicketResponse.from(updated));
+        } catch (IllegalArgumentException e) {
+            String msg = e.getMessage() == null ? "Request failed" : e.getMessage();
+            if (msg.toLowerCase().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + msg);
+            }
+            return ResponseEntity.badRequest().body("Error: " + msg);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteMyTicket(@PathVariable Long id) {
+        try {
+            User user = getCurrentUser();
+            if (user.getRole() != User.Role.USER) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            ticketService.deleteMyOpenTicket(user, id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            String msg = e.getMessage() == null ? "Request failed" : e.getMessage();
+            if (msg.toLowerCase().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + msg);
+            }
+            return ResponseEntity.badRequest().body("Error: " + msg);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/manage/{id}")
     public ResponseEntity<?> deleteTicketForManagement(@PathVariable Long id) {
         try {

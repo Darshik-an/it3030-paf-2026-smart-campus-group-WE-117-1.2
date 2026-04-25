@@ -22,6 +22,8 @@ const statusStyles = {
   OPEN: { label: "Open", dotColor: "bg-yellow-500" },
   IN_PROGRESS: { label: "In Progress", dotColor: "bg-blue-500" },
   RESOLVED: { label: "Resolved", dotColor: "bg-green-500" },
+  CLOSED: { label: "Closed", dotColor: "bg-gray-500" },
+  REJECTED: { label: "Rejected", dotColor: "bg-red-500" },
 };
 
 function formatRelativeTime(timestamp) {
@@ -45,6 +47,15 @@ export default function TicketingDashboard() {
   const [tickets, setTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
   const [ticketError, setTicketError] = useState("");
+  const [editingTicket, setEditingTicket] = useState(null);
+  const [editValues, setEditValues] = useState({
+    resource: "",
+    category: "HARDWARE",
+    priority: "LOW",
+    description: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -74,6 +85,82 @@ export default function TicketingDashboard() {
 
   const handleTicketCreated = (newTicket) => {
     setTickets((prev) => [newTicket, ...prev]);
+  };
+
+  const beginEdit = (ticket) => {
+    const statusKey = String(ticket?.status || "").toUpperCase();
+    if (statusKey !== "OPEN") {
+      alert("You can only edit tickets that are in OPEN status.");
+      return;
+    }
+    setEditingTicket(ticket);
+    setEditValues({
+      resource: ticket?.resource || "",
+      category: String(ticket?.category || "HARDWARE").toUpperCase(),
+      priority: String(ticket?.priority || "LOW").toUpperCase(),
+      description: ticket?.description || "",
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingTicket(null);
+    setSavingEdit(false);
+  };
+
+  const saveEdit = async () => {
+    if (!editingTicket) return;
+    const statusKey = String(editingTicket?.status || "").toUpperCase();
+    if (statusKey !== "OPEN") {
+      alert("You can only edit tickets that are in OPEN status.");
+      cancelEdit();
+      return;
+    }
+
+    const payload = {
+      resource: editValues.resource?.trim(),
+      category: editValues.category,
+      priority: editValues.priority,
+      description: editValues.description?.trim(),
+    };
+
+    if (!payload.resource || !payload.description) {
+      alert("Affected resource and issue description are required.");
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      const response = await api.patch(`/api/tickets/${editingTicket.id}`, payload);
+      const updated = response.data;
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      setEditingTicket(null);
+    } catch (err) {
+      const message = err.response?.data || "Failed to update ticket.";
+      alert(typeof message === "string" ? message : "Failed to update ticket.");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const deleteMyTicket = async (ticket) => {
+    const statusKey = String(ticket?.status || "").toUpperCase();
+    if (statusKey !== "OPEN") {
+      alert("You can only delete tickets that are in OPEN status.");
+      return;
+    }
+    if (!window.confirm(`Delete ticket #${ticket.id}? This action cannot be undone.`)) return;
+
+    setDeletingId(ticket.id);
+    try {
+      await api.delete(`/api/tickets/${ticket.id}`);
+      setTickets((prev) => prev.filter((t) => t.id !== ticket.id));
+      if (editingTicket?.id === ticket.id) setEditingTicket(null);
+    } catch (err) {
+      const message = err.response?.data || "Failed to delete ticket.";
+      alert(typeof message === "string" ? message : "Failed to delete ticket.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const statusCounts = useMemo(() => {
@@ -179,13 +266,19 @@ export default function TicketingDashboard() {
                 {!loadingTickets &&
                   !ticketError &&
                   tickets.map((t) => {
-                    const status = statusStyles[t.status] || { label: t.status, dotColor: "bg-gray-500" };
+                    const statusKey = String(t.status || "").toUpperCase();
+                    const canEditDelete = statusKey === "OPEN";
+                    const status = statusStyles[statusKey] || { label: t.status, dotColor: "bg-gray-500" };
                     return (
-                      <button
+                      <div
                         key={t.id}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => navigate(`/tickets/${t.id}`)}
-                        className="bg-white rounded-xl p-4 flex items-center gap-3 border border-gray-200 text-left hover:border-blue-300 transition"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") navigate(`/tickets/${t.id}`);
+                        }}
+                        className="bg-white rounded-xl p-4 flex items-center gap-3 border border-gray-200 text-left hover:border-blue-300 transition cursor-pointer"
                       >
                         <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">🖥</div>
                         <div className="flex-1">
@@ -211,8 +304,35 @@ export default function TicketingDashboard() {
                             <span className={`w-2 h-2 rounded-full ${status.dotColor}`} />
                             {status.label}
                           </span>
+                          {canEditDelete && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <button
+                                type="button"
+                                className="text-xs px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  beginEdit(t);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="text-xs px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-60"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  deleteMyTicket(t);
+                                }}
+                                disabled={deletingId === t.id}
+                              >
+                                {deletingId === t.id ? "Deleting…" : "Delete"}
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
               </div>
@@ -220,6 +340,107 @@ export default function TicketingDashboard() {
           )}
         </div>
       </main>
+
+      {/* Edit Modal */}
+      {editingTicket && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+          role="dialog"
+          aria-modal="true"
+          onClick={cancelEdit}
+        >
+          <div
+            className="w-full max-w-xl bg-white rounded-2xl shadow-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <p className="text-xs text-gray-500">Edit Ticket #{editingTicket.id}</p>
+                <h3 className="text-lg font-bold text-gray-900">Update your ticket</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  You can only edit tickets while they are in <span className="font-semibold">OPEN</span> status.
+                </p>
+              </div>
+              <button type="button" className="text-gray-500 hover:text-gray-700" onClick={cancelEdit}>
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold tracking-widest text-gray-700 mb-2">
+                  AFFECTED RESOURCE
+                </label>
+                <input
+                  value={editValues.resource}
+                  onChange={(e) => setEditValues((p) => ({ ...p, resource: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none"
+                  placeholder="e.g. Lab 03 - Projector"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-gray-700 mb-2">
+                    CATEGORY
+                  </label>
+                  <select
+                    value={editValues.category}
+                    onChange={(e) => setEditValues((p) => ({ ...p, category: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none"
+                  >
+                    <option value="HARDWARE">HARDWARE</option>
+                    <option value="SOFTWARE">SOFTWARE</option>
+                    <option value="FACILITY">FACILITY</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-gray-700 mb-2">
+                    PRIORITY
+                  </label>
+                  <select
+                    value={editValues.priority}
+                    onChange={(e) => setEditValues((p) => ({ ...p, priority: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none"
+                  >
+                    <option value="LOW">LOW</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold tracking-widest text-gray-700 mb-2">
+                  ISSUE DESCRIPTION
+                </label>
+                <textarea
+                  value={editValues.description}
+                  onChange={(e) => setEditValues((p) => ({ ...p, description: e.target.value }))}
+                  className="w-full min-h-[120px] px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none"
+                  placeholder="Describe the issue in detail..."
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button type="button" className="px-4 py-2 rounded-lg text-sm text-gray-700" onClick={cancelEdit}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white disabled:opacity-60"
+                onClick={saveEdit}
+                disabled={savingEdit}
+              >
+                {savingEdit ? "Saving…" : "Save changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
