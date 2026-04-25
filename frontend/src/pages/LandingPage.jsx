@@ -1,14 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Wrench, Bell, CheckCircle2, Menu, X } from 'lucide-react';
+import { ArrowRight, Calendar, Wrench, Bell, CheckCircle2, Menu, X, Building2, Flag, Mail, Phone, MapPin, Clock3 } from 'lucide-react';
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY <= 10) {
+        setShowNavbar(true);
+      } else if (currentY > lastY) {
+        setShowNavbar(false);
+        setIsMobileMenuOpen(false);
+      } else {
+        setShowNavbar(true);
+      }
+      lastY = currentY;
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-[#FCBF49] selection:text-[#003049] overflow-x-hidden">
       {/* Navbar */}
-      <nav className="fixed w-full z-50 bg-[#003049]/95 backdrop-blur-md py-4 shadow-lg border-b border-white/10">
+      <nav
+        className={`fixed w-full z-50 bg-transparent py-4 transition-transform duration-300 ${
+          showNavbar ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#FCBF49] rounded-xl flex items-center justify-center text-[#003049] font-black text-xl shadow-inner">SC</div>
@@ -17,6 +41,10 @@ export default function LandingPage() {
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-8">
+            <a href="#home" className="text-white/90 font-semibold hover:text-[#FCBF49] transition-colors">Home</a>
+            <a href="#about" className="text-white/90 font-semibold hover:text-[#FCBF49] transition-colors">About Us</a>
+            <a href="#report" className="text-white/90 font-semibold hover:text-[#FCBF49] transition-colors">Report Us</a>
+            <a href="#contact" className="text-white/90 font-semibold hover:text-[#FCBF49] transition-colors">Contact Us</a>
             <Link to="/login" className="text-white font-semibold hover:text-[#FCBF49] transition-colors">Log In</Link>
             <Link to="/signup" className="px-6 py-2.5 bg-[#F77F00] text-white rounded-xl font-bold hover:bg-[#e67600] transition-all shadow-lg shadow-[#F77F00]/20">Get Started</Link>
           </div>
@@ -33,6 +61,10 @@ export default function LandingPage() {
         {/* Mobile Nav Drawer */}
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-[#003049] border-t border-white/10 shadow-2xl flex flex-col p-6 gap-6 z-50">
+            <a href="#home" onClick={() => setIsMobileMenuOpen(false)} className="text-white font-semibold text-center text-lg hover:text-[#FCBF49] transition-colors p-2">Home</a>
+            <a href="#about" onClick={() => setIsMobileMenuOpen(false)} className="text-white font-semibold text-center text-lg hover:text-[#FCBF49] transition-colors p-2">About Us</a>
+            <a href="#report" onClick={() => setIsMobileMenuOpen(false)} className="text-white font-semibold text-center text-lg hover:text-[#FCBF49] transition-colors p-2">Report Us</a>
+            <a href="#contact" onClick={() => setIsMobileMenuOpen(false)} className="text-white font-semibold text-center text-lg hover:text-[#FCBF49] transition-colors p-2">Contact Us</a>
             <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-white font-semibold text-center text-lg hover:text-[#FCBF49] transition-colors p-2">Log In</Link>
             <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center px-6 py-4 bg-[#F77F00] text-white rounded-xl font-bold hover:bg-[#e67600] transition-all shadow-lg shadow-[#F77F00]/20">Get Started</Link>
           </div>
@@ -40,7 +72,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-[#003049] min-h-screen flex items-center">
+      <section id="home" className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-[#003049] min-h-screen flex items-center">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#F77F00] opacity-20 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#D62828] opacity-20 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
 
@@ -93,7 +125,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-white relative">
+      <section id="about" className="py-24 bg-white relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl font-black text-[#003049] tracking-tight mb-4">Everything you need to run your campus</h2>
@@ -126,6 +158,100 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold text-[#003049] mb-3">Real-time Notifications</h3>
               <p className="text-gray-500 leading-relaxed mb-6 gap-2">Never miss an update. Receive instant alerts on booking status changes, ticket updates, and campus-wide announcements.</p>
+            </div>
+          </div>
+
+          <div className="mt-16 bg-[#f8f9fa] rounded-[2rem] p-8 md:p-10 border border-gray-100">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-[#003049]/10 text-[#003049] flex items-center justify-center">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-black text-[#003049]">About SmartCampusHub</h3>
+            </div>
+            <p className="text-gray-600 leading-relaxed font-medium">
+              SmartCampusHub is maintained by the Smart Campus Operations Team to centralize facility booking,
+              support ticketing, and campus notifications in one place. Our goal is to reduce response times,
+              improve transparency, and make daily campus operations easier for students and staff.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Report Section */}
+      <section id="report" className="py-24 bg-[#f8f9fa] relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <h2 className="text-4xl font-black text-[#003049] tracking-tight mb-4">Report Us</h2>
+            <p className="text-lg text-gray-500 font-medium">
+              Found a system issue, security concern, or incorrect booking/ticket behavior? Reach our support desk quickly.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl border border-gray-100 p-7 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-[#D62828]/10 text-[#D62828] flex items-center justify-center mb-4">
+                <Flag className="w-6 h-6" />
+              </div>
+              <h3 className="font-black text-[#003049] text-xl mb-2">Platform Bugs</h3>
+              <p className="text-gray-500 font-medium text-sm leading-relaxed">
+                Report broken forms, login issues, missing data, notification failures, and dashboard errors.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 p-7 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-[#F77F00]/10 text-[#F77F00] flex items-center justify-center mb-4">
+                <Mail className="w-6 h-6" />
+              </div>
+              <h3 className="font-black text-[#003049] text-xl mb-2">Email Reporting</h3>
+              <p className="text-gray-500 font-medium text-sm leading-relaxed">
+                Send details and screenshots to <span className="text-[#003049] font-bold">support@smartcampushub.edu</span>.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 p-7 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-[#003049]/10 text-[#003049] flex items-center justify-center mb-4">
+                <Clock3 className="w-6 h-6" />
+              </div>
+              <h3 className="font-black text-[#003049] text-xl mb-2">Response SLA</h3>
+              <p className="text-gray-500 font-medium text-sm leading-relaxed">
+                Critical issues: within 2 hours. Normal issues: within 1 business day.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <h2 className="text-4xl font-black text-[#003049] tracking-tight mb-4">Contact Us</h2>
+            <p className="text-lg text-gray-500 font-medium">
+              Reach the Campus Digital Operations Office for account, booking, and platform support.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-[#f8f9fa] rounded-2xl border border-gray-100 p-6">
+              <MapPin className="w-6 h-6 text-[#003049] mb-3" />
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Office</p>
+              <p className="text-[#003049] font-bold leading-relaxed">Digital Operations Unit<br />Admin Building, Level 2</p>
+            </div>
+            <div className="bg-[#f8f9fa] rounded-2xl border border-gray-100 p-6">
+              <Phone className="w-6 h-6 text-[#D62828] mb-3" />
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Hotline</p>
+              <p className="text-[#003049] font-bold">+94 11 234 5678</p>
+              <p className="text-xs text-gray-500 font-medium mt-1">Mon–Fri, 8:30 AM – 5:00 PM</p>
+            </div>
+            <div className="bg-[#f8f9fa] rounded-2xl border border-gray-100 p-6">
+              <Mail className="w-6 h-6 text-[#F77F00] mb-3" />
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Email</p>
+              <p className="text-[#003049] font-bold">support@smartcampushub.edu</p>
+              <p className="text-xs text-gray-500 font-medium mt-1">General support & incident reporting</p>
+            </div>
+            <div className="bg-[#f8f9fa] rounded-2xl border border-gray-100 p-6">
+              <Clock3 className="w-6 h-6 text-[#003049] mb-3" />
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Support Hours</p>
+              <p className="text-[#003049] font-bold">24/7 Monitoring</p>
+              <p className="text-xs text-gray-500 font-medium mt-1">After-hours incidents are queued for urgent triage.</p>
             </div>
           </div>
         </div>
