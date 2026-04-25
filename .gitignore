@@ -5,3 +5,4 @@
 backend/src/main/java/com/example/backend/.env
 
 backend/uploads/
+backend/data/smart-campus.mv.db
