@@ -20,7 +20,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class DataInitializer {
 
-    private static final String ADMIN_EMAIL = "admin@smartcampus.edu";
+    private static final String ADMIN_EMAIL = "admin@campus.lk";
     private static final String ADMIN_PASSWORD = "Admin@123";
     private static final String ADMIN_NAME = "System Administrator";
 
@@ -35,10 +35,9 @@ public class DataInitializer {
             dropLegacyTechnicianActiveTicketsTable();
             purgeRetiredRoleUsers();
             seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
-            seedUserIfNotExists("user@smartcampus.edu", "Regular User", "User@123", User.Role.USER);
-            seedUserIfNotExists("facility_manager@smartcampus.edu", "Facility Manager", "Manager@123", User.Role.FACILITY_MANAGER);
-            seedUserIfNotExists("support@smartcampus.edu", "Student Support", "Support@123", User.Role.STUDENT_SUPPORT);
-            seedUserIfNotExists("technician@smartcampus.edu", "Technician User", "Technician@123", User.Role.TECHNICIAN);
+            seedUserIfNotExists("fmanager@campus.lk", "Bandara lokuge", "Manager@123", User.Role.FACILITY_MANAGER);
+            seedUserIfNotExists("support@campus.lk", "Kumari Perera", "Support@123", User.Role.STUDENT_SUPPORT);
+            seedUserIfNotExists("tech@campus.lk", "Saman Kumara", "Tech@123", User.Role.TECHNICIAN);
             seedHelpdeskTechniciansIfEmpty();
             seedTechnicianUsersFromHelpdeskRoster();
         };
@@ -71,13 +70,13 @@ public class DataInitializer {
         }
         try {
             helpdeskTechnicianRepository.save(helpdeskTech(
-                    "Marcus Thorne", "marcus@campus.com", "+94 77 123 4567",
+                    "Marcus Thorne", "marcus@campus.lk", "+94 77 123 4567",
                     "Hardware", "Projectors & AV Systems"));
             helpdeskTechnicianRepository.save(helpdeskTech(
-                    "Sarah Jenkins", "sarah@campus.com", "+94 71 555 7788",
+                    "Sarah Jenkins", "sarah@campus.lk", "+94 71 555 7788",
                     "Software", "Network & Systems"));
             helpdeskTechnicianRepository.save(helpdeskTech(
-                    "Brian Taylor", "brian@campus.com", "+94 75 888 2222",
+                    "Brian Taylor", "brian@campus.lk", "+94 75 888 2222",
                     "Facility", "HVAC & Plumbing"));
             log.info("Seeded sample helpdesk technicians");
         } catch (Exception ex) {
