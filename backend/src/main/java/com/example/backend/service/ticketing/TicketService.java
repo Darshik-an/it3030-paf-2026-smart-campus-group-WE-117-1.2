@@ -5,6 +5,7 @@ import com.example.backend.model.ticketing.Ticket;
 import com.example.backend.model.ticketing.TicketComment;
 import com.example.backend.repository.ticketing.TicketCommentRepository;
 import com.example.backend.repository.ticketing.TicketRepository;
+import com.example.backend.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final HelpdeskTechnicianService technicianService;
     private final TicketCommentRepository commentRepository;
+    private final NotificationService notificationService;
 
     public List<Ticket> getUserTickets(User user) {
         return ticketRepository.findByUserOrderByCreatedAtDesc(user);
@@ -87,7 +89,9 @@ public class TicketService {
         c.setTicket(ticket);
         c.setAuthor(user);
         c.setMessage(message.trim());
-        return commentRepository.save(c);
+        TicketComment saved = commentRepository.save(c);
+        notificationService.onTicketComment(ticket, user, saved.getMessage());
+        return saved;
     }
 
     public void deleteMyComment(User user, Long ticketId, Long commentId) {
@@ -135,6 +139,8 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
 
+        Ticket.TicketStatus previousStatus = ticket.getStatus();
+
         if (ticket.getAssignedTechnician() == null || ticket.getAssignedTechnician().isBlank()) {
             throw new IllegalArgumentException("This ticket is not assigned to you.");
         }
@@ -167,6 +173,7 @@ public class TicketService {
         ticket.setStatus(parsed);
         Ticket saved = ticketRepository.save(ticket);
         technicianService.syncActiveTicketsFromTickets();
+        notificationService.onTicketUpdatedByTechnician(previousStatus, saved);
         return saved;
     }
 
@@ -205,6 +212,7 @@ public class TicketService {
 
         Ticket saved = ticketRepository.save(ticket);
         technicianService.syncActiveTicketsFromTickets();
+        notificationService.onTicketCreated(saved);
         return saved;
     }
 
@@ -216,6 +224,9 @@ public class TicketService {
     ) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        Ticket.TicketStatus previousStatus = ticket.getStatus();
+        String previousAssignee = ticket.getAssignedTechnician();
 
         if (status != null && !status.isBlank()) {
             String normalizedStatus = normalize(status);
@@ -239,6 +250,7 @@ public class TicketService {
 
         Ticket saved = ticketRepository.save(ticket);
         technicianService.syncActiveTicketsFromTickets();
+        notificationService.onTicketUpdatedByManagement(previousStatus, previousAssignee, saved);
         return saved;
     }
 

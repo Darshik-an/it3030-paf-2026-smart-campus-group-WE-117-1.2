@@ -15,6 +15,7 @@ import com.example.backend.model.auth.User;
 import com.example.backend.model.booking.Booking;
 import com.example.backend.repository.ResourceRepository;
 import com.example.backend.repository.booking.BookingRepository;
+import com.example.backend.service.notification.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class BookingService {
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
+    private final NotificationService notificationService;
     private static final LocalTime BOOKING_START_TIME = LocalTime.of(8, 0);
     private static final LocalTime BOOKING_END_TIME = LocalTime.of(17, 30);
 
@@ -57,7 +59,9 @@ public class BookingService {
         booking.setExpectedAttendees(expectedAttendees);
         booking.setStatus(Booking.BookingStatus.PENDING);
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.onBookingCreated(saved);
+        return saved;
     }
 
     /**
@@ -108,6 +112,7 @@ public class BookingService {
             .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         try {
+            Booking.BookingStatus previousStatus = booking.getStatus();
             Booking.BookingStatus newStatus = Booking.BookingStatus.valueOf(status);
             booking.setStatus(newStatus);
 
@@ -120,7 +125,9 @@ public class BookingService {
                 booking.setAttendanceConfirmedAt(null);
             }
 
-            return bookingRepository.save(booking);
+            Booking saved = bookingRepository.save(booking);
+            notificationService.onBookingStatusChanged(saved, previousStatus);
+            return saved;
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid booking status: " + status);
         }
@@ -146,7 +153,9 @@ public class BookingService {
         booking.setStatus(Booking.BookingStatus.CANCELLED);
         booking.setAttendanceCode(null);
         booking.setAttendanceConfirmedAt(null);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.onUserCancelledBooking(saved);
+        return saved;
     }
 
     public String generateAttendanceCode(Long bookingId) {
