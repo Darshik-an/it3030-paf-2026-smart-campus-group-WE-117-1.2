@@ -257,9 +257,153 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Simple Footer */}
-      <footer className="bg-[#003049] text-white/60 py-8 border-t border-white/10 text-center text-sm font-medium">
-        <p>© 2026 Smart Campus Hub. PAF Group WE-117-1.2.</p>
+      {/* Footer */}
+      <footer className="bg-[#003049] text-white/70 relative overflow-hidden">
+        {/* Decorative Background Glow */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#F77F00] opacity-[0.04] rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#FCBF49] opacity-[0.04] rounded-full blur-[100px] pointer-events-none"></div>
+
+        {/* Upper Footer — Main Link Columns */}
+        <div className="max-w-7xl mx-auto px-6 pt-16 pb-12 border-b border-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            {/* Column 1 — Platform */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">Platform</h4>
+              <ul className="space-y-3">
+                {['Facility Booking', 'Incident Tickets', 'Maintenance Requests', 'Notifications Center', 'Event Scheduling', 'Room Availability', 'Task Planner', 'Resource Calendar'].map((item) => (
+                  <li key={item}>
+                    <a href="#about" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 2 — Student Services */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">Student Services</h4>
+              <ul className="space-y-3">
+                {['Student Dashboard', 'My Bookings', 'Support Tickets', 'Campus Map', 'Study Room Reservations', 'Equipment Loans', 'Lost & Found', 'Transport Info'].map((item) => (
+                  <li key={item}>
+                    <a href="#about" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 3 — Resources */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">Resources</h4>
+              <ul className="space-y-3">
+                {['Knowledge Base', 'User Guides', 'API Documentation', 'System Status', 'FAQs', 'Video Tutorials', 'Release Notes', 'Accessibility'].map((item) => (
+                  <li key={item}>
+                    <a href="#about" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 4 — Staff & Admin */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">Staff & Admin</h4>
+              <ul className="space-y-3">
+                {['Admin Dashboard', 'Approval Queue', 'Staff Management', 'Analytics & Reports', 'Role Permissions', 'Audit Logs', 'Bulk Operations', 'System Configuration'].map((item) => (
+                  <li key={item}>
+                    <a href="#about" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Lower Footer — Brand + Secondary Columns */}
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+            {/* Brand Column */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">SmartCampusHub</h4>
+              <ul className="space-y-3">
+                {['About', 'What We Offer', 'Leadership', 'Careers', 'Partners', 'Campus News', 'Events', 'Social Impact'].map((item) => (
+                  <li key={item}>
+                    <a href="#about" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Community Column */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">Community</h4>
+              <ul className="space-y-3">
+                {['Student Forum', 'Staff Network', 'Beta Testers', 'Blog', 'Feedback Hub', 'Tech Talks'].map((item) => (
+                  <li key={item}>
+                    <a href="#about" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* More Column */}
+            <div>
+              <h4 className="text-white font-black text-sm uppercase tracking-widest mb-5">More</h4>
+              <ul className="space-y-3">
+                {['Press', 'Investors', 'Terms of Service', 'Privacy Policy', 'Help Center', 'Accessibility', 'Contact', 'Cookie Preferences'].map((item) => (
+                  <li key={item}>
+                    <a href="#contact" className="text-sm font-medium hover:text-[#FCBF49] transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* CTA + Download Column */}
+            <div className="space-y-6">
+              {/* Logo & tagline */}
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#FCBF49] rounded-xl flex items-center justify-center text-[#003049] font-black text-lg shadow-inner">SC</div>
+                  <span className="text-xl font-black text-white tracking-tight">Smart<span className="text-[#F77F00]">Campus</span></span>
+                </div>
+                <p className="text-xs text-white/50 leading-relaxed font-medium">Unified campus operations for students, staff, and administrators.</p>
+              </div>
+
+              {/* Download-style badges */}
+              <div className="space-y-3">
+                <a href="#" className="flex items-center gap-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl px-4 py-3 transition-all group">
+                  <div className="text-[#FCBF49]">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-white/50 font-semibold uppercase tracking-wider">Download on the</p>
+                    <p className="text-sm text-white font-bold -mt-0.5">App Store</p>
+                  </div>
+                </a>
+
+                <a href="#" className="flex items-center gap-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl px-4 py-3 transition-all group">
+                  <div className="text-[#FCBF49]">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 010 1.38l-2.302 2.302L15.396 13l2.302-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302L5.864 2.658z"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-white/50 font-semibold uppercase tracking-wider">Get it on</p>
+                    <p className="text-sm text-white font-bold -mt-0.5">Google Play</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-white/40 font-medium">© 2026 SmartCampusHub — PAF Group WE-117-1.2. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="text-xs text-white/40 hover:text-[#FCBF49] transition-colors font-medium">Privacy</a>
+              <a href="#" className="text-xs text-white/40 hover:text-[#FCBF49] transition-colors font-medium">Terms</a>
+              <a href="#" className="text-xs text-white/40 hover:text-[#FCBF49] transition-colors font-medium">Cookies</a>
+              <a href="#" className="text-xs text-white/40 hover:text-[#FCBF49] transition-colors font-medium">Sitemap</a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
