@@ -202,10 +202,10 @@ const AdminBookings = () => {
                     <div className="bg-white p-3 rounded-xl border border-slate-200">
                       <QRCodeCanvas
                         value={booking.attendanceCode}
-                        size={180}
+                        size={280}
                         bgColor="#ffffff"
-                        fgColor="#003049"
-                        level="M"
+                        fgColor="#111111"
+                        level="H"
                         includeMargin
                       />
                     </div>

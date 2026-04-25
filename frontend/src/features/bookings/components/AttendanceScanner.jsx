@@ -7,7 +7,12 @@ const AttendanceScanner = () => {
   const { confirmAttendance, bookingLoading } = useBooking();
   const scannerElementId = useId().replace(/:/g, '_');
   const scannerRef = useRef(null);
+  const captureVideoRef = useRef(null);
+  const captureCanvasRef = useRef(null);
+  const captureStreamRef = useRef(null);
   const isMountedRef = useRef(true);
+  const isConfirmingRef = useRef(false);
+
   const [isScanning, setIsScanning] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [message, setMessage] = useState('');
@@ -16,7 +21,23 @@ const AttendanceScanner = () => {
   const [availableCameras, setAvailableCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState('');
   const [lastDetectedCode, setLastDetectedCode] = useState('');
-  const isConfirmingRef = useRef(false);
+  const [isCaptureMode, setIsCaptureMode] = useState(false);
+  const [isCaptureScanning, setIsCaptureScanning] = useState(false);
+
+  const stopCaptureCamera = () => {
+    if (captureStreamRef.current) {
+      captureStreamRef.current.getTracks().forEach((track) => track.stop());
+      captureStreamRef.current = null;
+    }
+
+    if (captureVideoRef.current) {
+      captureVideoRef.current.srcObject = null;
+    }
+
+    if (isMountedRef.current) {
+      setIsCaptureMode(false);
+    }
+  };
 
   const stopScanner = async () => {
     if (scannerRef.current) {
@@ -33,6 +54,7 @@ const AttendanceScanner = () => {
         // Ignore clear errors during teardown.
       }
     }
+
     if (isMountedRef.current) {
       setIsScanning(false);
       setActiveCameraLabel('');
@@ -44,6 +66,7 @@ const AttendanceScanner = () => {
     return () => {
       isMountedRef.current = false;
       void stopScanner();
+      stopCaptureCamera();
     };
   }, []);
 
@@ -64,6 +87,7 @@ const AttendanceScanner = () => {
       setMessage('Attendance confirmed successfully.');
       setMessageType('success');
       setManualCode('');
+      stopCaptureCamera();
       await stopScanner();
     } catch (error) {
       setMessage(error.response?.data || 'Failed to confirm attendance.');
@@ -80,6 +104,7 @@ const AttendanceScanner = () => {
 
     setMessage('');
     setLastDetectedCode('');
+    stopCaptureCamera();
 
     try {
       const cameras = await Html5Qrcode.getCameras();
@@ -106,12 +131,15 @@ const AttendanceScanner = () => {
         preferredCamera.id,
         {
           fps: 10,
-          qrbox: { width: 220, height: 220 },
+          // Derive the scan box from actual preview size to avoid oversized boxes on mobile.
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const scanSize = Math.max(140, Math.floor(minEdge * 0.75));
+            return { width: scanSize, height: scanSize };
+          },
           aspectRatio: 1,
-          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true
-          }
+          disableFlip: false,
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
         },
         async (decodedText) => {
           setLastDetectedCode(decodedText);
@@ -128,6 +156,93 @@ const AttendanceScanner = () => {
       setMessage(`${scannerErrorMessage} You can still confirm with manual code input.`);
       setMessageType('error');
       await stopScanner();
+    }
+  };
+
+  const startCaptureCamera = async () => {
+    setMessage('');
+    setLastDetectedCode('');
+    await stopScanner();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment'
+        },
+        audio: false
+      });
+
+      captureStreamRef.current = stream;
+      setIsCaptureMode(true);
+
+      if (captureVideoRef.current) {
+        captureVideoRef.current.srcObject = stream;
+        await captureVideoRef.current.play();
+      }
+    } catch (error) {
+      const cameraError = error?.message || 'Could not open camera for capture.';
+      setMessage(cameraError);
+      setMessageType('error');
+    }
+  };
+
+  const captureAndScan = async () => {
+    if (!captureVideoRef.current || !captureCanvasRef.current) {
+      return;
+    }
+
+    const video = captureVideoRef.current;
+    const canvas = captureCanvasRef.current;
+
+    if (!video.videoWidth || !video.videoHeight) {
+      setMessage('Camera is not ready yet. Please wait a moment and try again.');
+      setMessageType('error');
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      setMessage('Unable to process captured image.');
+      setMessageType('error');
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    setIsCaptureScanning(true);
+    setMessage('Processing captured photo...');
+    setMessageType('info');
+    setLastDetectedCode('');
+
+    let photoScanner = null;
+    try {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      if (!blob) {
+        throw new Error('Could not capture image from camera.');
+      }
+
+      const photoFile = new File([blob], 'attendance-capture.jpg', { type: 'image/jpeg' });
+      photoScanner = new Html5Qrcode(scannerElementId);
+      const decodedText = await photoScanner.scanFile(photoFile, true);
+      setLastDetectedCode(decodedText);
+      setMessage('QR detected from captured photo. Confirming attendance...');
+      setMessageType('info');
+      await confirmCode(decodedText);
+    } catch (error) {
+      const photoError = error?.message || 'Could not decode a QR from the captured photo.';
+      setMessage(`${photoError} Capture again with the QR centered and closer.`);
+      setMessageType('error');
+    } finally {
+      if (photoScanner) {
+        try {
+          await photoScanner.clear();
+        } catch {
+          // Ignore clear failures after file decoding.
+        }
+      }
+      setIsCaptureScanning(false);
     }
   };
 
@@ -149,7 +264,7 @@ const AttendanceScanner = () => {
         <select
           value={selectedCameraId}
           onChange={(event) => setSelectedCameraId(event.target.value)}
-          disabled={isScanning}
+          disabled={isScanning || isCaptureMode}
           className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#003049] focus:ring-2 focus:ring-[#003049]/10 disabled:opacity-60"
         >
           <option value="">Auto-select camera</option>
@@ -163,10 +278,19 @@ const AttendanceScanner = () => {
         <button
           type="button"
           onClick={startScanner}
-          disabled={isScanning || bookingLoading}
+          disabled={isScanning || bookingLoading || isCaptureScanning}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#003049] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#002338] disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
           <Camera className="w-4 h-4" /> Start Camera
+        </button>
+
+        <button
+          type="button"
+          onClick={startCaptureCamera}
+          disabled={bookingLoading || isCaptureMode || isCaptureScanning}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F77F00] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#dc7304] disabled:opacity-60 disabled:cursor-not-allowed transition"
+        >
+          <Camera className="w-4 h-4" /> Capture From Camera
         </button>
 
         <button
@@ -179,13 +303,43 @@ const AttendanceScanner = () => {
         </button>
       </div>
 
+      {isCaptureMode && (
+        <div className="rounded-xl border border-slate-300 p-3 space-y-3">
+          <video
+            ref={captureVideoRef}
+            className="w-full rounded-lg bg-black"
+            playsInline
+            muted
+            autoPlay
+          />
+          <canvas ref={captureCanvasRef} className="hidden" />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={captureAndScan}
+              disabled={isCaptureScanning}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            >
+              {isCaptureScanning ? 'Scanning...' : 'Capture & Scan'}
+            </button>
+            <button
+              type="button"
+              onClick={stopCaptureCamera}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-200 px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-300 transition"
+            >
+              Cancel Capture
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
         id={scannerElementId}
         className={`overflow-hidden rounded-xl border ${isScanning ? 'border-[#003049] p-2' : 'border-dashed border-slate-300 p-6'} min-h-[140px]`}
       />
 
-      {!isScanning && (
-        <p className="text-sm text-slate-500 text-center">Camera preview appears here after starting the scanner.</p>
+      {!isScanning && !isCaptureMode && (
+        <p className="text-sm text-slate-500 text-center">Camera preview appears here after starting the scanner. Keep the QR centered and within a close distance.</p>
       )}
 
       {isScanning && activeCameraLabel && (
