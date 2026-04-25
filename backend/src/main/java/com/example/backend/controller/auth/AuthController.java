@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final com.example.backend.service.FileStorageService fileStorageService;
+    private final com.example.backend.repository.ticketing.TicketRepository ticketRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -92,6 +94,12 @@ public class AuthController {
                 user.setPhoneNumber(request.getPhone());
             }
             if (request.getPassword() != null && !request.getPassword().isBlank()) {
+                if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Current password is required to set a new password"));
+                }
+                if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Incorrect current password"));
+                }
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
             }
 
@@ -139,10 +147,34 @@ public class AuthController {
         return ResponseEntity.ok(user);
     }
 
+    @DeleteMapping("/profile")
+    @Transactional
+    public ResponseEntity<?> deleteAccount() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof User)) return ResponseEntity.status(401).body("Unauthorized");
+
+        User authenticatedUser = (User) principal;
+        User user = userRepository.findByEmail(authenticatedUser.getEmail()).orElseThrow();
+
+        // Cleanup profile picture
+        if (user.getProfilePicture() != null) {
+            fileStorageService.deleteFile(user.getProfilePicture());
+        }
+
+        // Cleanup user tickets
+        ticketRepository.deleteByUser(user);
+
+        // Finally delete the user
+        userRepository.delete(user);
+
+        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+    }
+
     @Data
     static class UpdateProfileRequest {
         private String name;
         private String phone;
+        private String currentPassword;
         private String password;
     }
 

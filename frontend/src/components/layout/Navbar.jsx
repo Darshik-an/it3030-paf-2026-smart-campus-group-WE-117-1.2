@@ -82,18 +82,21 @@ export default function Navbar({ setIsMobileMenuOpen, setIsDesktopMenuOpen }) {
             </div>
             
             <div className="py-2">
-              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors">
-                <UserCircle className="w-4 h-4" /> Profile
+              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 hover:text-[#003049] hover:bg-gray-50 transition-all">
+                <UserCircle className="w-5 h-5 text-gray-400" /> Profile
               </Link>
-              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors">
-                <Shield className="w-4 h-4" /> Change Password
+              <Link to="/profile?action=change-password" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 hover:text-[#003049] hover:bg-gray-50 transition-all">
+                <Shield className="w-5 h-5 text-gray-400" /> Change Password
               </Link>
-              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-[#003049] hover:bg-gray-50 transition-colors border-b border-gray-50">
-                <Settings className="w-4 h-4" /> Settings
+              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 hover:text-[#003049] hover:bg-gray-50 transition-all border-b border-gray-50">
+                <Settings className="w-5 h-5 text-gray-400" /> Settings
               </Link>
               
-              <button onClick={handleLogout} className="w-full mt-1 flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-[#D62828] hover:bg-[#D62828]/10 transition-colors">
-                <LogOut className="w-4 h-4" /> Log out
+              <button 
+                onClick={handleLogout} 
+                className="w-full mt-1 flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#D62828] hover:bg-red-50 transition-all group/logout"
+              >
+                <LogOut className="w-5 h-5 group-hover/logout:translate-x-1 transition-transform" /> Log out
               </button>
             </div>
           </div>

@@ -1,18 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
-import { Mail, Calendar, Shield, Clock, UserCircle, Key, Edit2, Trash2, X, Maximize2 } from 'lucide-react';
+import { Mail, Calendar, Shield, Clock, UserCircle, Key, Edit2, Trash2, X, Maximize2, Loader2, Check } from 'lucide-react';
 import AvatarUploader from '../features/auth/components/AvatarUploader';
 import api from '../services/api';
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Name Edit States
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState(user?.name || '');
+  const [isSavingName, setIsSavingName] = useState(false);
+
+  // Password Modal States
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'change-password') {
+      setShowPasswordModal(true);
+    }
+  }, [location]);
   
   const getInitial = () => {
     return user?.name?.charAt(0).toUpperCase() || 'U';
@@ -53,6 +78,78 @@ export default function ProfilePage() {
     }
   };
 
+  const handleUpdateName = async () => {
+    if (!newName.trim() || newName === user?.name) {
+      setIsEditingName(false);
+      return;
+    }
+    try {
+      setIsSavingName(true);
+      await api.patch('/api/auth/profile', { name: newName.trim() });
+      setUser({ ...user, name: newName.trim() });
+      setIsEditingName(false);
+    } catch (err) {
+      alert('Failed to update name');
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess(false);
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      await api.patch('/api/auth/profile', {
+        currentPassword: passwordForm.currentPassword,
+        password: passwordForm.newPassword
+      });
+      setPasswordSuccess(true);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordSuccess(false);
+      }, 2000);
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('WARNING: This will permanently delete your account and all associated data (tickets, settings, etc.). This action cannot be undone. Are you sure?')) {
+      return;
+    }
+
+    const confirmEmail = window.prompt(`Please type your email address (${user?.email}) to confirm deletion:`);
+    if (confirmEmail !== user?.email) {
+      alert('Email confirmation failed. Account not deleted.');
+      return;
+    }
+
+    try {
+      await api.delete('/api/auth/profile');
+      alert('Your account has been successfully deleted.');
+      logout();
+      window.location.href = '/login';
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete account');
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#f8f9fa] font-sans selection:bg-[#FCBF49] selection:text-[#003049] overflow-hidden">
       <Sidebar 
@@ -77,12 +174,15 @@ export default function ProfilePage() {
               <div className="absolute bottom-[-50%] left-[-10%] w-[300px] h-[300px] bg-[#F77F00]/10 rounded-full blur-[80px] pointer-events-none"></div>
 
               {/* Delete Icon */}
-              <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 group/delete">
-                <button className="bg-red-50 hover:bg-red-500 text-[#D62828] hover:text-white p-3 rounded-2xl transition-all shadow-sm">
+              <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 group/delete text-gray-400">
+                <button 
+                  onClick={handleDeleteAccount}
+                  className="bg-gray-50 hover:bg-red-500 text-gray-400 hover:text-white p-3 rounded-2xl transition-all shadow-sm group-hover/delete:animate-pulse"
+                >
                   <Trash2 className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
                 <div className="absolute top-full right-0 mt-2 w-max bg-gray-900 text-white text-xs font-bold px-3 py-2 rounded-xl opacity-0 group-hover/delete:opacity-100 transition-opacity pointer-events-none z-30 shadow-xl">
-                  Wanna delete your account?
+                  Danger Zone: Delete Account
                   <div className="absolute -top-1 right-5 w-2 h-2 bg-gray-900 rotate-45"></div>
                 </div>
               </div>
@@ -128,16 +228,33 @@ export default function ProfilePage() {
                   {user?.role === 'USER' ? 'STUDENT' : (user?.role || 'STUDENT')}
                 </div>
                 <div className="flex items-center justify-center md:justify-start gap-3 group/name cursor-pointer">
-                  <h1 className="text-3xl md:text-4xl font-black text-[#003049] tracking-tight">{user?.name || 'User Name'}</h1>
-                  <button className="text-gray-400 hover:text-[#F77F00] transition-colors opacity-0 group-hover/name:opacity-100 group-hover/info:opacity-100 md:opacity-0 focus:opacity-100">
-                    <Edit2 className="w-5 h-5" />
-                  </button>
+                  {isEditingName ? (
+                    <div className="flex items-center gap-2">
+                       <input 
+                         autoFocus
+                         className="text-2xl md:text-3xl font-black text-[#003049] border-b-2 border-[#F77F00] bg-transparent outline-none py-1 w-full max-w-[300px]"
+                         value={newName}
+                         onChange={(e) => setNewName(e.target.value)}
+                         onKeyDown={(e) => e.key === 'Enter' && handleUpdateName()}
+                         onBlur={handleUpdateName}
+                         disabled={isSavingName}
+                       />
+                       {isSavingName && <Loader2 className="w-5 h-5 animate-spin text-[#F77F00]" />}
+                    </div>
+                  ) : (
+                    <>
+                      <h1 className="text-3xl md:text-4xl font-black text-[#003049] tracking-tight">{user?.name || 'User Name'}</h1>
+                      <button 
+                        onClick={() => { setIsEditingName(true); setNewName(user?.name || ''); }}
+                        className="text-gray-400 hover:text-[#F77F00] transition-colors opacity-0 group-hover/name:opacity-100 group-hover/info:opacity-100 md:opacity-0 focus:opacity-100"
+                      >
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
                 </div>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 mt-2 font-medium group/email cursor-pointer hover:text-gray-700 transition-colors w-fit mx-auto md:mx-0 pr-4">
+                <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 mt-2 font-medium group/email w-fit mx-auto md:mx-0 pr-4">
                   <span>{user?.email || 'email@example.com'}</span>
-                  <button className="text-gray-400 hover:text-[#F77F00] transition-colors opacity-0 group-hover/email:opacity-100 group-hover/info:opacity-100 md:opacity-0 focus:opacity-100 ml-1">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -183,11 +300,11 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="space-y-3 mt-auto">
-                  <button className="w-full bg-white border-2 border-gray-100 hover:border-gray-200 text-[#003049] py-4 rounded-2xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => setShowPasswordModal(true)}
+                    className="w-full bg-[#003049] text-white py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-[#003049]/20"
+                  >
                     <Shield className="w-4 h-4" /> Change Password
-                  </button>
-                  <button className="w-full bg-orange-50 border-2 border-[#F77F00]/20 hover:border-[#F77F00]/40 text-[#F77F00] py-4 rounded-2xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                    <Key className="w-4 h-4" /> Reset Password
                   </button>
                 </div>
               </div>
@@ -215,6 +332,90 @@ export default function ProfilePage() {
               className="max-w-full max-h-full rounded-3xl shadow-2xl object-contain animate-in zoom-in duration-500" 
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        )}
+
+        {/* Change Password Modal */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 z-[150] bg-[#003049]/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in duration-300 p-8 md:p-10">
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
+                     <Key className="w-5 h-5 text-[#F77F00]" />
+                  </div>
+                  <h3 className="text-xl font-black text-[#003049]">Change Password</h3>
+                </div>
+                <button 
+                  onClick={() => setShowPasswordModal(false)}
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {passwordSuccess ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check className="w-10 h-10" />
+                  </div>
+                  <h4 className="text-xl font-bold text-[#003049]">Password Updated!</h4>
+                  <p className="text-gray-500">Your security settings have been saved.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleChangePassword} className="space-y-5">
+                  {passwordError && (
+                    <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold flex items-center gap-2">
+                       <Shield className="w-4 h-4 flex-shrink-0" /> {passwordError}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Current Password</label>
+                    <input 
+                      type="password"
+                      required
+                      className="w-full bg-gray-50 border-2 border-gray-50 focus:border-[#F77F00] outline-none px-6 py-4 rounded-2xl font-medium transition-all"
+                      placeholder="••••••••"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
+                    <input 
+                      type="password"
+                      required
+                      className="w-full bg-gray-50 border-2 border-gray-50 focus:border-[#F77F00] outline-none px-6 py-4 rounded-2xl font-medium transition-all"
+                      placeholder="••••••••"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Confirm New Password</label>
+                    <input 
+                      type="password"
+                      required
+                      className="w-full bg-gray-50 border-2 border-gray-50 focus:border-[#F77F00] outline-none px-6 py-4 rounded-2xl font-medium transition-all"
+                      placeholder="••••••••"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="w-full bg-[#003049] text-white py-4 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#003049]/20 disabled:opacity-50 mt-4 h-14"
+                  >
+                    {isChangingPassword ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : 'Update Password'}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         )}
       </main>
