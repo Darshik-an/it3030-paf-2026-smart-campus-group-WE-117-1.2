@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,29 +52,21 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        String normalizedEmail = normalizeEmail(request.getEmail());
-        String rawPassword = request.getPassword();
-        if (normalizedEmail == null || normalizedEmail.isBlank() || rawPassword == null || rawPassword.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Invalid email or password"));
-        }
-
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(normalizedEmail, rawPassword)
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (BadCredentialsException e) {
-            if (!tryUpgradeLegacyPassword(normalizedEmail, rawPassword)) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Invalid email or password"));
-            }
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid email or password"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Invalid email or password"));
         }
 
-        User user = userRepository.findByEmail(normalizedEmail).orElseThrow();
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         user.setLastLoggedIn(java.time.LocalDateTime.now());
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(normalizedEmail);
+        String token = jwtUtil.generateToken(user.getEmail());
 
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
@@ -205,29 +196,5 @@ public class AuthController {
     static class AuthRequest {
         private String email;
         private String password;
-    }
-
-    private String normalizeEmail(String email) {
-        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
-    }
-
-    private boolean tryUpgradeLegacyPassword(String email, String rawPassword) {
-        return userRepository.findByEmail(email)
-                .map(user -> {
-                    String storedPassword = user.getPassword();
-                    if (storedPassword == null || storedPassword.isBlank()) return false;
-                    if (looksLikeBcrypt(storedPassword)) return false;
-                    if (!storedPassword.equals(rawPassword)) return false;
-                    user.setPassword(passwordEncoder.encode(rawPassword));
-                    userRepository.save(user);
-                    return true;
-                })
-                .orElse(false);
-    }
-
-    private boolean looksLikeBcrypt(String password) {
-        return password.startsWith("$2a$")
-                || password.startsWith("$2b$")
-                || password.startsWith("$2y$");
     }
 }
