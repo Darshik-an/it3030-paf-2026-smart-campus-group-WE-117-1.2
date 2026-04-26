@@ -1,9 +1,12 @@
 package com.example.backend.service.booking;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,7 @@ import com.example.backend.model.auth.User;
 import com.example.backend.model.booking.Booking;
 import com.example.backend.repository.ResourceRepository;
 import com.example.backend.repository.booking.BookingRepository;
+import com.example.backend.service.notification.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class BookingService {
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
+    private final NotificationService notificationService;
     private static final LocalTime BOOKING_START_TIME = LocalTime.of(8, 0);
     private static final LocalTime BOOKING_END_TIME = LocalTime.of(17, 30);
 
@@ -34,6 +39,17 @@ public class BookingService {
         // Validate resource exists
         Resource resource = resourceRepository.findById(resourceId)
             .orElseThrow(() -> new RuntimeException("Resource not found"));
+
+        if (expectedAttendees == null || expectedAttendees < 1) {
+            throw new RuntimeException("Expected attendees must be at least 1");
+        }
+
+        Integer resourceCapacity = resource.getCapacity();
+        if (resourceCapacity != null && expectedAttendees > resourceCapacity) {
+            throw new RuntimeException(
+                "Expected attendees cannot exceed resource capacity (" + resourceCapacity + ")"
+            );
+        }
 
         // Check for conflicts
         List<Booking> conflicts = bookingRepository.findConflictingBookings(
@@ -54,7 +70,9 @@ public class BookingService {
         booking.setExpectedAttendees(expectedAttendees);
         booking.setStatus(Booking.BookingStatus.PENDING);
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.onBookingCreated(saved);
+        return saved;
     }
 
     /**
@@ -105,6 +123,7 @@ public class BookingService {
             .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         try {
+            Booking.BookingStatus previousStatus = booking.getStatus();
             Booking.BookingStatus newStatus = Booking.BookingStatus.valueOf(status);
             booking.setStatus(newStatus);
 
@@ -112,7 +131,14 @@ public class BookingService {
                 booking.setRejectionReason(rejectionReason);
             }
 
-            return bookingRepository.save(booking);
+            if (newStatus != Booking.BookingStatus.APPROVED) {
+                booking.setAttendanceCode(null);
+                booking.setAttendanceConfirmedAt(null);
+            }
+
+            Booking saved = bookingRepository.save(booking);
+            notificationService.onBookingStatusChanged(saved, previousStatus);
+            return saved;
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid booking status: " + status);
         }
@@ -136,6 +162,54 @@ public class BookingService {
         }
 
         booking.setStatus(Booking.BookingStatus.CANCELLED);
+        booking.setAttendanceCode(null);
+        booking.setAttendanceConfirmedAt(null);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.onUserCancelledBooking(saved);
+        return saved;
+    }
+
+    public String generateAttendanceCode(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() != Booking.BookingStatus.APPROVED) {
+            throw new RuntimeException("Attendance QR is available only for approved bookings");
+        }
+
+        if (booking.getAttendanceCode() != null && !booking.getAttendanceCode().isBlank()) {
+            return booking.getAttendanceCode();
+        }
+
+        String code = "BK-" + booking.getId() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        booking.setAttendanceCode(code);
+        bookingRepository.save(booking);
+        return code;
+    }
+
+    public Booking confirmAttendance(User user, String attendanceCode) {
+        if (attendanceCode == null || attendanceCode.isBlank()) {
+            throw new RuntimeException("Attendance code is required");
+        }
+
+        Booking booking = bookingRepository.findByAttendanceCode(attendanceCode.trim())
+            .orElseThrow(() -> new RuntimeException("Invalid attendance code"));
+
+        if (!booking.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized: This attendance QR belongs to another user");
+        }
+
+        if (booking.getStatus() != Booking.BookingStatus.APPROVED) {
+            throw new RuntimeException("Attendance can be confirmed only for approved bookings");
+        }
+
+        LocalDate localToday = LocalDate.now();
+        LocalDate utcToday = LocalDate.now(ZoneOffset.UTC);
+        if (!booking.getBookingDate().equals(localToday) && !booking.getBookingDate().equals(utcToday)) {
+            throw new RuntimeException("Attendance can be confirmed only on the booking date");
+        }
+
+        booking.setAttendanceConfirmedAt(LocalDateTime.now());
         return bookingRepository.save(booking);
     }
 

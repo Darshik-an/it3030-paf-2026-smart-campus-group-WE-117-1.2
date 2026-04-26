@@ -22,8 +22,9 @@ export default function LoginPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    const normalizedEmail = email.trim().toLowerCase();
     try {
-      const response = await api.post('/api/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email: normalizedEmail, password });
       const token = response.data.token;
 
       const meRes = await api.get('/api/auth/me', {

@@ -10,5 +10,9 @@ import com.example.backend.model.ResourceType;
 
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, Long> {
+    boolean existsByResourceCode(String resourceCode);
+
+    List<Resource> findByResourceCodeIsNull();
+
     List<Resource> findByTypeAndCapacityGreaterThanEqualAndLocationContainingIgnoreCase(ResourceType type, Integer capacity, String location);
 }

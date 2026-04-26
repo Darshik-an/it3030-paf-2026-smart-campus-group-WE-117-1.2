@@ -5,7 +5,7 @@ const typeOptions = [
   { value: "LECTURE_HALL", label: "Lecture Hall" },
   { value: "LAB", label: "Lab" },
   { value: "MEETING_ROOM", label: "Meeting Room" },
-  { value: "EQUIPMENT", label: "Equipment" },
+  { value: "AUDITORIUM", label: "Auditorium" },
 ];
 const statusOptions = [
   { value: "ACTIVE", label: "Active" },
@@ -32,16 +32,28 @@ const ResourceForm = ({ resource, onClose, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name || !form.type || !form.capacity || !form.location || !form.status) {
+    const parsedCapacity = Number.parseInt(form.capacity, 10);
+
+    if (!form.name || !form.type || form.capacity === "" || !form.location || !form.status) {
       setError("All fields are required.");
       return;
     }
-    if (form.capacity < 1) {
+    if (!Number.isInteger(parsedCapacity)) {
+      setError("Capacity must be a whole number.");
+      return;
+    }
+    if (parsedCapacity < 1) {
       setError("Capacity must be at least 1.");
       return;
     }
     setError(null);
-    onSubmit({ ...form, capacity: parseInt(form.capacity, 10) });
+    onSubmit({
+      ...form,
+      name: form.name.trim(),
+      location: form.location.trim(),
+      description: form.description?.trim() || "",
+      capacity: parsedCapacity,
+    });
   };
 
   return (

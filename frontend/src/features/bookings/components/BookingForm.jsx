@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../../services/api';
 
 const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResourceId = null }) => {
   const BUSINESS_START_TIME = '08:00';
   const BUSINESS_END_TIME = '17:30';
   const today = new Date().toISOString().split('T')[0];
   const [availableResources, setAvailableResources] = useState([]);
+  const [resourceAvailability, setResourceAvailability] = useState({});
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   useEffect(() => {
     // Ensure resources is always an array
@@ -20,6 +23,64 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
   });
 
   const [errors, setErrors] = useState({});
+
+  const selectedResource = availableResources.find(
+    (resource) => String(resource.id) === String(formData.resourceId)
+  );
+
+  const hasValidSchedule =
+    !!formData.bookingDate &&
+    !!formData.startTime &&
+    !!formData.endTime &&
+    formData.startTime < formData.endTime;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkAvailability = async () => {
+      const activeResources = availableResources.filter((resource) => resource.status === 'ACTIVE');
+
+      if (!hasValidSchedule || activeResources.length === 0) {
+        setResourceAvailability({});
+        setCheckingAvailability(false);
+        return;
+      }
+
+      setCheckingAvailability(true);
+      try {
+        const checks = await Promise.all(
+          activeResources.map(async (resource) => {
+            const response = await api.get('/api/bookings/check-conflict', {
+              params: {
+                resourceId: resource.id,
+                date: formData.bookingDate,
+                startTime: formData.startTime,
+                endTime: formData.endTime,
+              },
+            });
+            return [resource.id, !response.data?.hasConflict];
+          })
+        );
+
+        if (!cancelled) {
+          setResourceAvailability(Object.fromEntries(checks));
+        }
+      } catch {
+        if (!cancelled) {
+          setResourceAvailability({});
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingAvailability(false);
+        }
+      }
+    };
+
+    checkAvailability();
+    return () => {
+      cancelled = true;
+    };
+  }, [availableResources, hasValidSchedule, formData.bookingDate, formData.startTime, formData.endTime]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,11 +100,14 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
     const newErrors = {};
     const parsedResourceId = Number(formData.resourceId);
     const parsedAttendees = Number(formData.expectedAttendees);
+    const selectedResourceCapacity = selectedResource?.capacity;
 
     if (!formData.resourceId) {
       newErrors.resourceId = 'Please select a resource';
     } else if (!Number.isInteger(parsedResourceId) || parsedResourceId <= 0) {
       newErrors.resourceId = 'Selected resource is invalid';
+    } else if (hasValidSchedule && resourceAvailability[parsedResourceId] === false) {
+      newErrors.resourceId = 'Selected facility is already booked for this time';
     }
     if (!formData.bookingDate) {
       newErrors.bookingDate = 'Please select a date';
@@ -70,6 +134,13 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
     }
     if (!Number.isInteger(parsedAttendees) || parsedAttendees < 1) {
       newErrors.expectedAttendees = 'Expected attendees must be at least 1';
+    } else if (
+      Number.isInteger(parsedResourceId) &&
+      parsedResourceId > 0 &&
+      Number.isInteger(selectedResourceCapacity) &&
+      parsedAttendees > selectedResourceCapacity
+    ) {
+      newErrors.expectedAttendees = `Expected attendees cannot exceed selected resource capacity (${selectedResourceCapacity})`;
     }
 
     return newErrors;
@@ -111,13 +182,22 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
             }`}
           >
             <option value="">Select a resource</option>
-            {availableResources.map(resource => (
-              <option key={resource.id} value={resource.id}>
-                {resource.name} ({resource.type}) - Capacity: {resource.capacity}
-              </option>
-            ))}
+            {availableResources
+              .filter((resource) => resource.status === 'ACTIVE')
+              .map((resource) => {
+                const isUnavailable = hasValidSchedule && resourceAvailability[resource.id] === false;
+                return (
+                  <option key={resource.id} value={resource.id} disabled={isUnavailable}>
+                    {resource.name} ({resource.type}) - ID: {resource.resourceCode || `FAC-${resource.id}`} - Capacity: {resource.capacity}
+                    {isUnavailable ? ' - Unavailable for selected time' : ''}
+                  </option>
+                );
+              })}
           </select>
           {errors.resourceId && <p className="mt-2 text-sm text-red-600 font-medium">{errors.resourceId}</p>}
+          {hasValidSchedule && checkingAvailability && (
+            <p className="mt-2 text-sm text-slate-500 font-medium">Checking facility availability for the selected time...</p>
+          )}
         </div>
 
         {/* Booking Date */}
@@ -206,10 +286,16 @@ const BookingForm = ({ onSubmit, isLoading = false, resources = [], initialResou
             value={formData.expectedAttendees}
             onChange={handleChange}
             min="1"
+            max={selectedResource?.capacity || undefined}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
               errors.expectedAttendees ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
             }`}
           />
+          {selectedResource?.capacity && (
+            <p className="mt-2 text-sm text-slate-600 font-medium">
+              Selected resource capacity: {selectedResource.capacity}
+            </p>
+          )}
           {errors.expectedAttendees && <p className="mt-2 text-sm text-red-600 font-medium">{errors.expectedAttendees}</p>}
         </div>
 

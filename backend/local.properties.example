@@ -1,0 +1,7 @@
+# Copy to backend/local.properties (gitignored) and fill in real values.
+# Loaded automatically via spring.config.import in application.properties.
+# Without this file, Google OAuth login is simply disabled — the rest of the app still runs.
+
+spring.security.oauth2.client.registration.google.client-id=YOUR_GOOGLE_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_GOOGLE_CLIENT_SECRET
+spring.security.oauth2.client.registration.google.scope=profile,email

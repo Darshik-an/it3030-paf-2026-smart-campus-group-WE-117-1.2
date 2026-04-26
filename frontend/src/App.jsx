@@ -22,6 +22,7 @@ import {
   MyBookings,
   BookingDetails
 } from './features/bookings';
+import NotificationsActivityPage from './features/notifications/pages/NotificationsActivityPage';
 
 function App() {
   return (
@@ -52,6 +53,11 @@ function App() {
             <Route path="/profile" element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/notifications" element={
+              <ProtectedRoute>
+                <NotificationsActivityPage />
               </ProtectedRoute>
             } />
 

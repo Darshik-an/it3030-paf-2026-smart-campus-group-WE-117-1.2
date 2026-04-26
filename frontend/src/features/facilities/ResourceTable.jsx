@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit, Trash2, MapPin, Users, ArrowRight, Wifi, Monitor, FlaskConical, BookOpen, Wrench, CheckCircle2, XCircle } from "lucide-react";
+import { Edit, Trash2, MapPin, Users, ArrowRight, Wifi, Monitor, FlaskConical, BookOpen, Building2, CheckCircle2, XCircle } from "lucide-react";
 
 const typeConfig = {
   LECTURE_HALL: {
@@ -29,9 +29,18 @@ const typeConfig = {
     border: "border-teal-100",
     badge: "bg-teal-100 text-teal-700",
   },
+  AUDITORIUM: {
+    label: "Auditorium",
+    icon: Building2,
+    gradient: "from-amber-500 to-orange-500",
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-100",
+    badge: "bg-amber-100 text-amber-700",
+  },
   EQUIPMENT: {
-    label: "Equipment",
-    icon: Wrench,
+    label: "Auditorium",
+    icon: Building2,
     gradient: "from-amber-500 to-orange-500",
     bg: "bg-amber-50",
     text: "text-amber-700",
@@ -80,6 +89,7 @@ const ResourceTable = ({ resources, onEdit, onDelete, userRole }) => (
             <div className="mt-4 relative z-10">
               <h3 className="text-xl font-bold text-white leading-tight">{r.name}</h3>
               <span className="text-white/70 text-xs font-medium mt-0.5 block">{config.label}</span>
+              <span className="text-white/70 text-xs font-semibold mt-1 block">ID: {r.resourceCode || `FAC-${r.id}`}</span>
             </div>
           </div>
 

@@ -3,6 +3,7 @@ package com.example.backend.repository.booking;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,10 @@ import com.example.backend.model.booking.Booking;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUser(User user);
+
+    void deleteByUser(User user);
+
+    Optional<Booking> findByAttendanceCode(String attendanceCode);
 
     List<Booking> findByUserAndStatus(User user, Booking.BookingStatus status);
 

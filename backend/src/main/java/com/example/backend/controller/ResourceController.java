@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,8 +29,12 @@ public class ResourceController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Resource> createResource(@RequestBody Resource resource) {
-        Resource created = resourceService.createResource(resource);
-        return ResponseEntity.ok(created);
+        try {
+            Resource created = resourceService.createResource(resource);
+            return ResponseEntity.ok(created);
+        } catch (IllegalArgumentException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -47,7 +52,11 @@ public class ResourceController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Resource> updateResource(@PathVariable Long id, @RequestBody Resource resource) {
-        return ResponseEntity.ok(resourceService.updateResource(id, resource));
+        try {
+            return ResponseEntity.ok(resourceService.updateResource(id, resource));
+        } catch (IllegalArgumentException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -63,7 +72,11 @@ public class ResourceController {
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Integer capacity,
             @RequestParam(required = false) String location) {
-        ResourceType resourceType = (type != null && !type.isBlank()) ? ResourceType.valueOf(type) : null;
-        return ResponseEntity.ok(resourceService.searchResources(resourceType, capacity, location));
+        try {
+            ResourceType resourceType = (type != null && !type.isBlank()) ? ResourceType.valueOf(type) : null;
+            return ResponseEntity.ok(resourceService.searchResources(resourceType, capacity, location));
+        } catch (IllegalArgumentException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid resource type: " + type);
+        }
     }
 }

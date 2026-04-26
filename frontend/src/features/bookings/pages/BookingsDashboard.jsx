@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useBooking } from '../context/BookingContext';
+import AttendanceScanner from '../components/AttendanceScanner';
 
 const BookingsDashboard = () => {
   const { bookings } = useBooking();
@@ -95,6 +96,8 @@ const BookingsDashboard = () => {
           </div>
         )}
       </section>
+
+      <AttendanceScanner />
     </div>
   );
 };
