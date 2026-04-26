@@ -40,6 +40,17 @@ public class BookingService {
         Resource resource = resourceRepository.findById(resourceId)
             .orElseThrow(() -> new RuntimeException("Resource not found"));
 
+        if (expectedAttendees == null || expectedAttendees < 1) {
+            throw new RuntimeException("Expected attendees must be at least 1");
+        }
+
+        Integer resourceCapacity = resource.getCapacity();
+        if (resourceCapacity != null && expectedAttendees > resourceCapacity) {
+            throw new RuntimeException(
+                "Expected attendees cannot exceed resource capacity (" + resourceCapacity + ")"
+            );
+        }
+
         // Check for conflicts
         List<Booking> conflicts = bookingRepository.findConflictingBookings(
             resourceId, bookingDate, startTime, endTime

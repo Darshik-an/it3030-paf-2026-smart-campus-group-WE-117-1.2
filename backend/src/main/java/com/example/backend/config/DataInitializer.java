@@ -1,8 +1,10 @@
 package com.example.backend.config;
 
 import com.example.backend.model.auth.User;
+import com.example.backend.model.Resource;
 import com.example.backend.model.ticketing.HelpdeskTechnician;
 import com.example.backend.repository.auth.UserRepository;
+import com.example.backend.repository.ResourceRepository;
 import com.example.backend.repository.ticketing.HelpdeskTechnicianRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,17 +16,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.UUID;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class DataInitializer {
 
-    private static final String ADMIN_EMAIL = "admin@campus.lk";
+    private static final String ADMIN_EMAIL = "admin@smartcampus.edu";
+    private static final String LEGACY_ADMIN_EMAIL = "admin@campus.lk";
     private static final String ADMIN_PASSWORD = "Admin@123";
     private static final String ADMIN_NAME = "System Administrator";
 
     private final UserRepository userRepository;
+    private final ResourceRepository resourceRepository;
     private final HelpdeskTechnicianRepository helpdeskTechnicianRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
@@ -33,13 +38,17 @@ public class DataInitializer {
     public CommandLineRunner seedUsers() {
         return args -> {
             dropLegacyTechnicianActiveTicketsTable();
+            normalizeLegacyEnumColumns();
             purgeRetiredRoleUsers();
+            migrateEquipmentFacilitiesToAuditorium();
+            backfillMissingResourceCodes();
             repairSeedUserCredentialsIfLegacy(ADMIN_EMAIL, ADMIN_PASSWORD, User.Role.ADMIN);
             repairSeedUserCredentialsIfLegacy("user@smartcampus.edu", "User@123", User.Role.USER);
             repairSeedUserCredentialsIfLegacy("facility_manager@smartcampus.edu", "Manager@123", User.Role.FACILITY_MANAGER);
             repairSeedUserCredentialsIfLegacy("support@smartcampus.edu", "Support@123", User.Role.STUDENT_SUPPORT);
             repairSeedUserCredentialsIfLegacy("technician@smartcampus.edu", "Technician@123", User.Role.TECHNICIAN);
-            seedUserIfNotExists(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, User.Role.ADMIN);
+            ensureAdminUser(ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD);
+            ensureAdminUser(LEGACY_ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD);
             seedUserIfNotExists("fmanager@campus.lk", "Bandara lokuge", "Manager@123", User.Role.FACILITY_MANAGER);
             seedUserIfNotExists("support@campus.lk", "Kumari Perera", "Support@123", User.Role.STUDENT_SUPPORT);
             seedUserIfNotExists("tech@campus.lk", "Saman Kumara", "Tech@123", User.Role.TECHNICIAN);
@@ -67,6 +76,59 @@ public class DataInitializer {
         } catch (Exception ex) {
             log.warn("Could not drop legacy table helpdesk_technician_active_tickets: {}", ex.getMessage());
         }
+    }
+
+    private void normalizeLegacyEnumColumns() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE resources ALTER COLUMN type VARCHAR(64)");
+        } catch (Exception ex) {
+            log.debug("resources.type enum normalization skipped: {}", ex.getMessage());
+        }
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN role VARCHAR(64)");
+        } catch (Exception ex) {
+            log.debug("users.role enum normalization skipped: {}", ex.getMessage());
+        }
+    }
+
+    private void migrateEquipmentFacilitiesToAuditorium() {
+        try {
+            int updated = jdbcTemplate.update(
+                    "UPDATE resources SET type = 'AUDITORIUM' WHERE type = 'EQUIPMENT'"
+            );
+            if (updated > 0) {
+                log.info("Migrated {} facility record(s) from EQUIPMENT to AUDITORIUM", updated);
+            }
+        } catch (Exception ex) {
+            log.warn("Could not migrate EQUIPMENT facilities to AUDITORIUM: {}", ex.getMessage());
+        }
+    }
+
+    private void backfillMissingResourceCodes() {
+        try {
+            var resources = resourceRepository.findByResourceCodeIsNull();
+            int updated = 0;
+            for (Resource resource : resources) {
+                String code = generateUniqueResourceCode();
+                resource.setResourceCode(code);
+                resourceRepository.save(resource);
+                updated++;
+            }
+            if (updated > 0) {
+                log.info("Backfilled resourceCode for {} facility record(s)", updated);
+            }
+        } catch (Exception ex) {
+            log.warn("Could not backfill resource codes: {}", ex.getMessage());
+        }
+    }
+
+    private String generateUniqueResourceCode() {
+        String code;
+        do {
+            code = "FAC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+        } while (resourceRepository.existsByResourceCode(code));
+        return code;
     }
 
     private void seedHelpdeskTechniciansIfEmpty() {
@@ -142,6 +204,26 @@ public class DataInitializer {
         t.setCategory(category);
         t.setSpecialization(specialization);
         return t;
+    }
+
+    private void ensureAdminUser(String email, String name, String password) {
+        try {
+            User user = userRepository.findByEmail(email).orElseGet(User::new);
+            boolean isNew = user.getId() == null;
+            user.setEmail(email);
+            user.setName(name);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setRole(User.Role.ADMIN);
+            user.setLastLoggedIn(LocalDateTime.now());
+            userRepository.save(user);
+            if (isNew) {
+                log.info("ADMIN user seeded: {} / {}", email, password);
+            } else {
+                log.info("ADMIN user refreshed: {} / {}", email, password);
+            }
+        } catch (Exception ex) {
+            log.warn("Skipping admin seed for {}: {}", email, ex.getMessage());
+        }
     }
 
     private void seedUserIfNotExists(String email, String name, String password, User.Role role) {

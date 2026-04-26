@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Building2, Inbox, BookOpen, FlaskConical, Monitor, Wrench, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, Building2, Inbox, BookOpen, FlaskConical, Monitor, CheckCircle2, XCircle } from "lucide-react";
 import ResourceTable from "../features/facilities/ResourceTable";
 import ResourceForm from "../features/facilities/ResourceForm";
 import ResourceFilter from "../features/facilities/ResourceFilter";
@@ -10,7 +10,7 @@ const typeIcons = {
   LECTURE_HALL: BookOpen,
   LAB: FlaskConical,
   MEETING_ROOM: Monitor,
-  EQUIPMENT: Wrench,
+  AUDITORIUM: Building2,
 };
 
 const Resources = () => {

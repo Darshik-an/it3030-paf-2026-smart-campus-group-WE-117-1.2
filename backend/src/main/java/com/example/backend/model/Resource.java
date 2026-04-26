@@ -11,6 +11,9 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, updatable = false)
+    private String resourceCode;
+
     @NotBlank
     private String name;
 
@@ -30,6 +33,8 @@ public class Resource {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public String getResourceCode() { return resourceCode; }
+    public void setResourceCode(String resourceCode) { this.resourceCode = resourceCode; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public ResourceType getType() { return type; }

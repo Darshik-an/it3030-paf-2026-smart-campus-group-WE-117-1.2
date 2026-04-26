@@ -1,5 +1,6 @@
 package com.example.backend.config;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,16 @@ public class BookingSchemaFixConfig {
     public CommandLineRunner cleanupLegacyBookingResourceForeignKey() {
         return args -> {
             try {
+                String databaseProduct = "unknown";
+                try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+                    databaseProduct = connection.getMetaData().getDatabaseProductName();
+                }
+
+                if (databaseProduct == null || !databaseProduct.toLowerCase().contains("mysql")) {
+                    log.debug("Skipping legacy bookings/resource foreign key cleanup for database: {}", databaseProduct);
+                    return;
+                }
+
                 List<Map<String, Object>> legacyConstraints = jdbcTemplate.queryForList(
                     "SELECT CONSTRAINT_NAME " +
                     "FROM information_schema.KEY_COLUMN_USAGE " +

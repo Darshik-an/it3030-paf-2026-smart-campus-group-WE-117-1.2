@@ -6,7 +6,7 @@ const typeOptions = [
   { value: "LECTURE_HALL", label: "Lecture Hall", color: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" },
   { value: "LAB", label: "Laboratory", color: "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100" },
   { value: "MEETING_ROOM", label: "Meeting Room", color: "bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100" },
-  { value: "EQUIPMENT", label: "Equipment", color: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" },
+  { value: "AUDITORIUM", label: "Auditorium", color: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" },
 ];
 
 const ResourceFilter = ({ onFilter }) => {
