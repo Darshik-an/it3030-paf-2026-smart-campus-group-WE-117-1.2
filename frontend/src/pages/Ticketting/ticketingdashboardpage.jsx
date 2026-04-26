@@ -199,20 +199,32 @@ export default function TicketingDashboard() {
           ) : (
             <div className="min-h-full bg-[#fcfcfc] p-7">
               {/* Title Row */}
-              <div className="flex items-start justify-between mb-5">
-                <div>
-                  <h1 className="text-[40px] font-bold text-[#003049]">Dashboard Summary</h1>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Real-time operational overview for Building A & B
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="bg-[#F77F00] text-white px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-2 hover:bg-[#D62828]"
-                >
-                  + Create New Ticket
-                </button>
+              {/* Banner Header */}
+            <div
+              className="flex items-center justify-between mb-5 rounded-2xl px-8 py-8 gap-6"
+              style={{ background: "linear-gradient(135deg, #003049 0%, #1a6b8a 50%, #2980b9 100%)" }}
+            >
+              <div>
+                <span className="inline-block bg-white/15 text-white text-[11px] font-medium tracking-widest uppercase rounded-full px-4 py-1 mb-3">
+                  TICKETS DASHBOARD
+                </span>
+                <h1 className="mt-3 text-3xl md:text-4xl font-black tracking-tight text-white">
+                  Report. Track. Resolve.
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm md:text-base text-blue-100/90">
+                 Raise a ticket and get quick, effective solutions—track progress every step of the way
+                </p>
               </div>
+              <button
+                onClick={() => setShowForm(true)}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#D62828")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#F77F00")}
+                className="text-white px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-2 flex-shrink-0 transition-colors duration-200"
+                style={{ background: "#F77F00" }}
+              >
+                + Create New Ticket
+              </button>
+            </div>
 
               {/* Stat Cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
