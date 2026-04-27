@@ -1,0 +1,10 @@
+# Maven build output
+target/
+*.class
+
+# Frontend
+node_modules/
+dist/
+
+# Application properties (contains sensitive data)
+src/main/resources/application.properties
